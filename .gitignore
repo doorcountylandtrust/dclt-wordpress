@@ -1,19 +1,27 @@
-# WordPress core files
+# Ignore WordPress core
+/wp-admin/
+/wp-includes/
+license.txt
+readme.html
+
+# Ignore all WordPress core files except wp-content
+!wp-content/
+
+# Ignore default wp-content stuff you don't need
+wp-content/plugins/hello.php
+wp-content/themes/twenty*/
+
+# Ignore config files (optional)
 wp-config.php
-wp-content/uploads/
-wp-content/cache/
-wp-content/upgrade/
+wp-config-sample.php
 
-# System files
+# Ignore OS and IDE files
 .DS_Store
-Thumbs.db
-
-# Logs
 *.log
-
-# IDE/editor files
+*.tmp
 .vscode/
 .idea/
+*.code-workspace
 
-# OS junk
-ehthumbs.db
+# Ignore uploaded files
+wp-content/uploads/
