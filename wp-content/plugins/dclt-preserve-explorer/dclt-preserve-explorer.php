@@ -6,18 +6,31 @@
  * Author: Door County Land Trust
  */
 
+
+
+
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
     exit;
 }
 
+ if (!defined('DCLT_PRESERVE_PLUGIN_URL')) {
+    define('DCLT_PRESERVE_PLUGIN_URL', plugin_dir_url(__FILE__));
+}
+
+if (!defined('DCLT_PRESERVE_VERSION')) {
+    define('DCLT_PRESERVE_VERSION', '1.0.0');
+}
+
 // Autoload files
 require_once plugin_dir_path(__FILE__) . 'includes/class-preserve-post-type.php';
 require_once plugin_dir_path(__FILE__) . 'includes/class-preserve-rest-api.php';
+require_once plugin_dir_path(__FILE__) . 'includes/class-preserve-meta-boxes.php';
 
 // Instantiate core classes
 new DCLT_Preserve_Post_Type();
 new DCLT_Preserve_REST_API();
+new DCLT_Preserve_Meta_Boxes();
 
 // Enqueue assets for Preserve Explorer page template
 function dclt_enqueue_preserve_explorer_assets() {
