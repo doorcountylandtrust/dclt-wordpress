@@ -1,27 +1,32 @@
-# Ignore WordPress core
-/wp-admin/
-/wp-includes/
+# WordPress Core (safe to ignore entirely if this isn't a core-managed repo)
+wp-admin/
+wp-includes/
 license.txt
 readme.html
 
-# Ignore all WordPress core files except wp-content
+# Only include wp-content
 !wp-content/
 
-# Ignore default wp-content stuff you don't need
+# Ignore common default content you don’t want
 wp-content/plugins/hello.php
-wp-content/themes/twenty*/
+wp-content/themes/twenty*
 
-# Ignore config files (optional)
+# Local config (optional, but good idea if this is versioned on staging/prod)
 wp-config.php
 wp-config-sample.php
 
-# Ignore OS and IDE files
+# Ignore uploads and generated files
+wp-content/uploads/
+wp-content/*/node_modules/
+wp-content/*/dist/
+wp-content/*/assets/js/*.js
+wp-content/*/assets/js/*.js.map
+
+# OS and IDE clutter
 .DS_Store
 *.log
 *.tmp
+*.code-workspace
 .vscode/
 .idea/
-*.code-workspace
-
-# Ignore uploaded files
-wp-content/uploads/
+.env

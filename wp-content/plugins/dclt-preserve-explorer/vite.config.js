@@ -16,5 +16,10 @@ export default defineConfig({
     },
     outDir: path.resolve(__dirname, './assets/js'),
     emptyOutDir: false,
+    rollupOptions: {
+      output: {
+        inlineDynamicImports: true,
+      },
+    },
   },
 });

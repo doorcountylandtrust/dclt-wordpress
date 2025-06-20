@@ -6,15 +6,12 @@
  * Author: Door County Land Trust
  */
 
-
-
-
 // Exit if accessed directly
 if (!defined('ABSPATH')) {
     exit;
 }
 
- if (!defined('DCLT_PRESERVE_PLUGIN_URL')) {
+if (!defined('DCLT_PRESERVE_PLUGIN_URL')) {
     define('DCLT_PRESERVE_PLUGIN_URL', plugin_dir_url(__FILE__));
 }
 
@@ -34,24 +31,19 @@ new DCLT_Preserve_Meta_Boxes();
 
 // Enqueue assets for Preserve Explorer page template
 function dclt_enqueue_preserve_explorer_assets() {
-    if (!is_page_template('page-preserve-explorer.php')) return;
-
-    // Leaflet CSS and JS
+    // TEMP: load scripts unconditionally
     wp_enqueue_style('leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
     wp_enqueue_script('leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', array(), null, true);
 
-    // Tailwind (optional for demo)
     wp_enqueue_style('tailwind', 'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
-
-    // React and ReactDOM from WordPress core
     wp_enqueue_script('react');
     wp_enqueue_script('react-dom');
 
-    // Custom CSS and JS
     wp_enqueue_style(
         'dclt-preserve-explorer',
         plugin_dir_url(__FILE__) . 'assets/css/preserve-explorer.css'
     );
+
     wp_enqueue_script(
         'dclt-preserve-explorer',
         plugin_dir_url(__FILE__) . 'assets/js/preserve-explorer.js',
@@ -60,20 +52,20 @@ function dclt_enqueue_preserve_explorer_assets() {
         true
     );
 
-    // Pass API endpoint
     wp_localize_script('dclt-preserve-explorer', 'preserveExplorerData', array(
         'apiUrl' => esc_url_raw(rest_url('wp/v2/preserves'))
     ));
 }
 add_action('wp_enqueue_scripts', 'dclt_enqueue_preserve_explorer_assets');
 
-// Register template if needed
+// Register page template for Gutenberg dropdown
 function dclt_register_preserve_template($templates) {
     $templates['page-preserve-explorer.php'] = 'Preserve Explorer';
     return $templates;
 }
 add_filter('theme_page_templates', 'dclt_register_preserve_template');
 
+// Load custom template from plugin directory
 function dclt_load_preserve_template($template) {
     if (is_page() && get_page_template_slug() === 'page-preserve-explorer.php') {
         $plugin_template = plugin_dir_path(__FILE__) . 'templates/page-preserve-explorer.php';
