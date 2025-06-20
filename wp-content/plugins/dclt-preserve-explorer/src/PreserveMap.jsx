@@ -22,13 +22,13 @@ const PreserveMap = () => {
   }, []);
 
   return (
-  <div className="relative w-full h-[600px]">
-    <MapContainer
-      center={[44.8, -87.4]}
-      zoom={10}
-      scrollWheelZoom={true}
-      className="h-full w-full z-0"
-    >
+<div style={{ height: '600px', width: '100%' }}>
+  <MapContainer
+    center={[44.8, -87.4]}
+    zoom={10}
+    scrollWheelZoom={true}
+    style={{ height: '100%', width: '100%' }}
+  >
       <TileLayer
         attribution='&copy; OpenStreetMap contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

@@ -4,6 +4,13 @@ import path from 'path';
 
 export default defineConfig({
   plugins: [react()],
+  css: {
+    preprocessorOptions: {
+      css: {
+        charset: false
+      }
+    }
+  },
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'),
   },

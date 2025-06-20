@@ -29,43 +29,69 @@ new DCLT_Preserve_Post_Type();
 new DCLT_Preserve_REST_API();
 new DCLT_Preserve_Meta_Boxes();
 
-// Enqueue assets for Preserve Explorer page template
+// Enqueue assets for Preserve Explorer page
 function dclt_enqueue_preserve_explorer_assets() {
-    // TEMP: load scripts unconditionally
-    wp_enqueue_style('leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
-    wp_enqueue_script('leaflet', 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js', array(), null, true);
+    // You can change this back to conditional once working: if (!is_page('preserve-explorer')) return;
 
-    wp_enqueue_style('tailwind', 'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css');
+    // Leaflet
+    wp_enqueue_style(
+        'leaflet',
+        'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+        array(),
+        '1.9.4'
+    );
+    wp_enqueue_script(
+        'leaflet',
+        'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+        array(),
+        '1.9.4',
+        true
+    );
+
+    // Tailwind (CDN version for now)
+    wp_enqueue_style(
+        'tailwind',
+        'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css',
+        array(),
+        '2.2.19'
+    );
+
+    // React (from WP core)
     wp_enqueue_script('react');
     wp_enqueue_script('react-dom');
 
-    wp_enqueue_style(
-        'dclt-preserve-explorer',
-        plugin_dir_url(__FILE__) . 'assets/css/preserve-explorer.css'
-    );
-
+    // Your compiled React app
     wp_enqueue_script(
         'dclt-preserve-explorer',
         plugin_dir_url(__FILE__) . 'assets/js/preserve-explorer.js',
         array('react', 'react-dom', 'leaflet'),
-        null,
+        DCLT_PRESERVE_VERSION,
         true
     );
 
+    // Optional: Custom CSS (commented out unless in use)
+    // wp_enqueue_style(
+    //     'dclt-preserve-explorer',
+    //     plugin_dir_url(__FILE__) . 'assets/css/preserve-explorer.css',
+    //     array(),
+    //     DCLT_PRESERVE_VERSION
+    // );
+
+    // Localize REST API data
     wp_localize_script('dclt-preserve-explorer', 'preserveExplorerData', array(
         'apiUrl' => esc_url_raw(rest_url('wp/v2/preserves'))
     ));
 }
 add_action('wp_enqueue_scripts', 'dclt_enqueue_preserve_explorer_assets');
 
-// Register page template for Gutenberg dropdown
+// Register template for page dropdown in Gutenberg
 function dclt_register_preserve_template($templates) {
     $templates['page-preserve-explorer.php'] = 'Preserve Explorer';
     return $templates;
 }
 add_filter('theme_page_templates', 'dclt_register_preserve_template');
 
-// Load custom template from plugin directory
+// Load template from plugin directory
 function dclt_load_preserve_template($template) {
     if (is_page() && get_page_template_slug() === 'page-preserve-explorer.php') {
         $plugin_template = plugin_dir_path(__FILE__) . 'templates/page-preserve-explorer.php';
