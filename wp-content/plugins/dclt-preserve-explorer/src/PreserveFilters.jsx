@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
 
-// Filter definitions (matching your complete REST API data)
-const FILTER_DEFINITIONS = {
+// Tiered filter structure - Primary vs Secondary
+const PRIMARY_FILTERS = {
   region: {
     label: 'Region',
     icon: '📍',
+    preset: true,
     options: {
       northern_door: 'Northern Door',
       central_door: 'Central Door', 
@@ -15,6 +16,7 @@ const FILTER_DEFINITIONS = {
   activity: {
     label: 'Activity',
     icon: '🥾',
+    preset: true,
     options: {
       hiking: 'Hiking',
       birdwatching: 'Birdwatching',
@@ -25,6 +27,30 @@ const FILTER_DEFINITIONS = {
       snowshoeing: 'Snowshoeing'
     }
   },
+  accessibility: {
+    label: 'Accessibility',
+    icon: '♿',
+    preset: true,
+    options: {
+      wheelchair_accessible: 'Wheelchair Accessible',
+      stroller_friendly: 'Stroller Friendly',
+      uneven_terrain: 'Uneven Terrain',
+      mobility_challenges: 'Limited Mobility'
+    }
+  },
+  difficulty: {
+    label: 'Difficulty',
+    icon: '⛰️',
+    preset: true,
+    options: {
+      easy: 'Easy',
+      moderate: 'Moderate',
+      difficult: 'Difficult'
+    }
+  }
+};
+
+const SECONDARY_FILTERS = {
   ecology: {
     label: 'Ecology',
     icon: '🌿',
@@ -38,15 +64,6 @@ const FILTER_DEFINITIONS = {
       limestone_bluff: 'Limestone Bluff'
     }
   },
-  difficulty: {
-    label: 'Difficulty',
-    icon: '⛰️',
-    options: {
-      easy: 'Easy',
-      moderate: 'Moderate',
-      difficult: 'Difficult'
-    }
-  },
   available_facilities: {
     label: 'Facilities',
     icon: '🏢',
@@ -54,200 +71,93 @@ const FILTER_DEFINITIONS = {
       restrooms: 'Restrooms',
       picnic_tables: 'Picnic Tables',
       water_fountains: 'Water Fountains',
-      trash_bins: 'Trash/Recycling Bins',
-      interpretive_signs: 'Interpretive Signs',
-      bike_racks: 'Bike Racks',
-      dog_waste_stations: 'Dog Waste Stations',
       parking_available: 'Parking Available'
     }
   },
-  trail_surface: {
-    label: 'Trail Surface',
-    icon: '🛤️',
-    options: {
-      paved: 'Paved',
-      boardwalk: 'Boardwalk',
-      natural_path: 'Natural Path',
-      rocky: 'Rocky',
-      sandy: 'Sandy'
-    }
-  },
-  accessibility: {
-    label: 'Accessibility',
-    icon: '♿',
-    options: {
-      wheelchair_accessible: 'Wheelchair Accessible',
-      stroller_friendly: 'Stroller Friendly',
-      uneven_terrain: 'Uneven Terrain',
-      mobility_challenges: 'May Be Challenging for Limited Mobility'
-    }
-  },
-  physical_challenges: {
-    label: 'Physical Challenges',
-    icon: '🏔️',
-    options: {
-      hills: 'Hills/Elevation Changes',
-      water_crossings: 'Water Crossings',
-      long_distances: 'Long Distances',
-      steep_grades: 'Steep Grades',
-      rough_terrain: 'Rough Terrain'
-    }
-  },
   notable_features: {
-    label: 'Notable Features',
+    label: 'Features',
     icon: '⭐',
     options: {
       waterfalls: 'Waterfalls',
       overlooks: 'Scenic Overlooks',
       historic_sites: 'Historic Sites',
-      rare_plants: 'Rare Plants',
-      rock_formations: 'Rock Formations',
-      caves: 'Caves',
-      springs: 'Natural Springs',
-      lighthouse: 'Lighthouse'
+      rare_plants: 'Rare Plants'
     }
   },
   photography: {
-    label: 'Photography Opportunities',
+    label: 'Photography',
     icon: '📸',
     options: {
       landscapes: 'Landscapes',
       wildlife: 'Wildlife',
       macro_flowers: 'Macro/Flowers',
-      sunrise_sunset: 'Sunrise/Sunset Spots',
-      water_reflections: 'Water Reflections',
-      seasonal_colors: 'Seasonal Colors'
+      sunrise_sunset: 'Sunrise/Sunset'
+    }
+  }
+};
+
+// Filter presets for quick access
+const FILTER_PRESETS = {
+  family_friendly: {
+    label: 'Family Friendly',
+    icon: '👨‍👩‍👧‍👦',
+    filters: {
+      difficulty: ['easy'],
+      accessibility: ['stroller_friendly'],
+      available_facilities: ['parking_available']
     }
   },
-  educational: {
-    label: 'Educational Features',
-    icon: '📚',
-    options: {
-      interpretive_trails: 'Interpretive Trails',
-      guided_tours: 'Guided Tours Available',
-      educational_signage: 'Educational Signage',
-      nature_center: 'Nature Center',
-      self_guided_tour: 'Self-Guided Tour'
+  photography: {
+    label: 'Photography',
+    icon: '📷',
+    filters: {
+      activity: ['photography'],
+      notable_features: ['overlooks', 'waterfalls'],
+      photography: ['landscapes', 'wildlife']
     }
   },
-  wildlife_spotting: {
-    label: 'Wildlife Spotting',
-    icon: '🦅',
-    options: {
-      birds_of_prey: 'Birds of Prey',
-      waterfowl: 'Waterfowl',
-      mammals: 'Mammals',
-      butterflies: 'Butterflies',
-      reptiles: 'Reptiles',
-      amphibians: 'Amphibians',
-      songbirds: 'Songbirds'
-    }
-  },
-  habitat_diversity: {
-    label: 'Habitat Diversity',
-    icon: '🌳',
-    options: {
-      multiple_ecosystems: 'Multiple Ecosystems',
-      single_habitat: 'Single Habitat Focus',
-      transitional_zones: 'Transitional Zones',
-      rare_habitats: 'Rare Habitats'
-    }
-  },
-  map_features: {
-    label: 'Map Features & Structures',
-    icon: '🗺️',
-    options: {
-      trail_markers: 'Trail Markers',
-      benches: 'Benches',
-      observation_decks: 'Observation Decks',
-      bridges: 'Bridges',
-      shelters: 'Shelters',
-      viewing_blinds: 'Wildlife Viewing Blinds',
-      kiosks: 'Information Kiosks',
-      gates: 'Gates/Entrances'
+  accessible: {
+    label: 'Accessible',
+    icon: '♿',
+    filters: {
+      accessibility: ['wheelchair_accessible', 'stroller_friendly'],
+      available_facilities: ['parking_available']
     }
   }
 };
 
 export default function PreserveFilters({ preserves = [], filters = {}, onFiltersChange }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [expandedSections, setExpandedSections] = useState({
-    region: true,
-    activity: true,
-    ecology: true
-  });
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState(null);
 
-  // Early return if no data yet
-  if (!preserves || !Array.isArray(preserves)) {
-    return (
-      <div className="filter-button-container">
-        <button className="filter-toggle-btn" disabled>
-          🔍 Loading...
-        </button>
-      </div>
-    );
-  }
-
-  // Calculate filter availability and counts
+  // Calculate filter stats for all filters
   const filterStats = useMemo(() => {
-    console.log('🔍 Calculating filter stats...');
-    console.log('📊 Preserves data:', preserves);
-    
+    const allFilters = { ...PRIMARY_FILTERS, ...SECONDARY_FILTERS };
     const stats = {};
     
-    Object.keys(FILTER_DEFINITIONS).forEach(filterType => {
+    Object.keys(allFilters).forEach(filterType => {
       stats[filterType] = {};
       
-      Object.keys(FILTER_DEFINITIONS[filterType].options).forEach(optionKey => {
-        let count = 0;
-        
-        try {
-          count = preserves.filter(preserve => {
-            if (!preserve || !preserve.meta) {
-              console.log(`⚠️ Preserve missing meta:`, preserve);
-              return false;
-            }
-            
-            const metaKey = `_preserve_filter_${filterType}`;
-            const preserveFilters = preserve.meta[metaKey] || [];
-            
-            // Debug logging for specific cases
-            if (filterType === 'region' || filterType === 'activity') {
-              console.log(`🔎 ${preserve.title?.rendered || 'Unknown'} - ${metaKey}:`, preserveFilters);
-            }
-            
-            const preserveArray = Array.isArray(preserveFilters) ? preserveFilters : [preserveFilters];
-            const hasFilter = preserveArray.filter(Boolean).includes(optionKey);
-            
-            if (hasFilter && (filterType === 'region' || filterType === 'activity')) {
-              console.log(`✅ ${preserve.title?.rendered} has ${filterType}.${optionKey}`);
-            }
-            
-            return hasFilter;
-          }).length;
-        } catch (e) {
-          console.error(`❌ Error calculating filter stats for ${filterType}.${optionKey}:`, e);
-          count = 0;
-        }
+      Object.keys(allFilters[filterType].options).forEach(optionKey => {
+        const count = preserves.filter(preserve => {
+          if (!preserve?.meta) return false;
+          const preserveFilters = preserve.meta[`_preserve_filter_${filterType}`] || [];
+          const preserveArray = Array.isArray(preserveFilters) ? preserveFilters : [preserveFilters];
+          return preserveArray.includes(optionKey);
+        }).length;
         
         stats[filterType][optionKey] = {
           count,
           available: count > 0,
           selected: filters[filterType]?.includes(optionKey) || false
         };
-        
-        // Log non-zero counts
-        if (count > 0) {
-          console.log(`📈 ${filterType}.${optionKey}: ${count} preserve(s)`);
-        }
       });
     });
     
-    console.log('📋 Final filter stats:', stats);
     return stats;
   }, [preserves, filters]);
 
-  // Handle filter selection
+  // Handle filter changes
   const handleFilterChange = (filterType, optionKey, checked) => {
     if (!onFiltersChange) return;
     
@@ -264,147 +174,166 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
       ...filters,
       [filterType]: newFilters
     });
+    
+    setSelectedPreset(null); // Clear preset when manual filtering
+  };
+
+  // Apply preset filters
+  const applyPreset = (presetKey) => {
+    const preset = FILTER_PRESETS[presetKey];
+    onFiltersChange(preset.filters);
+    setSelectedPreset(presetKey);
   };
 
   // Clear all filters
   const clearAllFilters = () => {
-    if (!onFiltersChange) return;
     onFiltersChange({});
+    setSelectedPreset(null);
   };
 
-  // Count total active filters
+  // Count active filters
   const totalActiveFilters = Object.values(filters).reduce((sum, filterArray) => 
     sum + (filterArray?.length || 0), 0
   );
 
-  // Toggle section expansion
-  const toggleSection = (filterType) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [filterType]: !prev[filterType]
-    }));
-  };
+  // Count filtered preserves
+  const filteredCount = preserves.filter(preserve => {
+    return Object.entries(filters).every(([filterType, selectedValues]) => {
+      if (!selectedValues || selectedValues.length === 0) return true;
+      const preserveFilters = preserve.meta[`_preserve_filter_${filterType}`] || [];
+      const preserveArray = Array.isArray(preserveFilters) ? preserveFilters : [preserveFilters];
+      return selectedValues.some(value => preserveArray.includes(value));
+    });
+  }).length;
 
-  // Close panel when clicking backdrop
-  const handleBackdropClick = (e) => {
-    if (e.target === e.currentTarget) {
-      setIsOpen(false);
-    }
-  };
+  // Show empty state
+  const showEmptyState = totalActiveFilters > 0 && filteredCount === 0;
 
   return (
     <>
-      {/* Filter Toggle Button */}
-      <div className="filter-button-container">
-        <button 
-          className={`filter-toggle-btn ${totalActiveFilters > 0 ? 'has-filters' : ''}`}
-          onClick={() => setIsOpen(true)}
-        >
-          🔍 Filters
-          {totalActiveFilters > 0 && (
-            <span className="filter-badge">{totalActiveFilters}</span>
-          )}
-        </button>
+      {/* Filter Presets Row */}
+      <div className="filter-presets">
+        <div className="preset-chips">
+          {Object.entries(FILTER_PRESETS).map(([presetKey, preset]) => (
+            <button
+              key={presetKey}
+              className={`preset-chip ${selectedPreset === presetKey ? 'active' : ''}`}
+              onClick={() => applyPreset(presetKey)}
+            >
+              <span className="preset-icon">{preset.icon}</span>
+              <span className="preset-label">{preset.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
-      {/* Filter Panel Overlay */}
-      {isOpen && (
-        <div className="filter-overlay" onClick={handleBackdropClick}>
-          <div className="filter-panel">
-            {/* Panel Header */}
-            <div className="filter-panel-header">
-              <h2>Filter Preserves</h2>
+      {/* Primary Filter Chips */}
+      <div className="primary-filters">
+        <div className="filter-chips-container">
+          {Object.entries(PRIMARY_FILTERS).map(([filterType, filterDef]) => {
+            const hasSelections = filters[filterType]?.length > 0;
+            const availableCount = Object.values(filterStats[filterType] || {})
+              .filter(stat => stat.available).length;
+            
+            return (
+              <button
+                key={filterType}
+                className={`filter-chip ${hasSelections ? 'active' : ''} ${availableCount === 0 ? 'disabled' : ''}`}
+                onClick={() => setIsModalOpen(filterType)}
+                disabled={availableCount === 0}
+              >
+                <span className="chip-icon">{filterDef.icon}</span>
+                <span className="chip-label">{filterDef.label}</span>
+                {hasSelections && (
+                  <span className="chip-count">{filters[filterType].length}</span>
+                )}
+              </button>
+            );
+          })}
+          
+          <button
+            className="more-filters-chip"
+            onClick={() => setIsModalOpen('more')}
+          >
+            <span className="chip-icon">⚙️</span>
+            <span className="chip-label">More</span>
+          </button>
+        </div>
+
+        {/* Results Summary */}
+        <div className="results-summary">
+          {showEmptyState ? (
+            <div className="empty-state">
+              <span className="empty-icon">🤷‍♀️</span>
+              <span className="empty-text">No preserves match these filters</span>
+              <button className="adjust-filters-btn" onClick={clearAllFilters}>
+                Clear filters
+              </button>
+            </div>
+          ) : (
+            <div className="results-count">
+              {totalActiveFilters > 0 ? (
+                <>
+                  <span className="count-text">{filteredCount} of {preserves.length} preserves</span>
+                  {totalActiveFilters > 0 && (
+                    <button className="clear-btn" onClick={clearAllFilters}>
+                      Clear all
+                    </button>
+                  )}
+                </>
+              ) : (
+                <span className="count-text">{preserves.length} preserves</span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Detailed Filter Modal */}
+      {isModalOpen && (
+        <div className="filter-modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="filter-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>
+                {isModalOpen === 'more' ? 'More Filters' : PRIMARY_FILTERS[isModalOpen]?.label}
+              </h3>
               <button 
-                className="close-btn"
-                onClick={() => setIsOpen(false)}
-                aria-label="Close filters"
+                className="modal-close"
+                onClick={() => setIsModalOpen(false)}
               >
                 ✕
               </button>
             </div>
 
-            {/* Active Filters Summary */}
-            {totalActiveFilters > 0 && (
-              <div className="active-filters-summary">
-                <span>{totalActiveFilters} filter{totalActiveFilters !== 1 ? 's' : ''} active</span>
-                <button 
-                  onClick={clearAllFilters}
-                  className="clear-all-btn"
-                >
-                  Clear All
-                </button>
-              </div>
-            )}
-
-            {/* Filter Content */}
-            <div className="filter-content">
-              {Object.entries(FILTER_DEFINITIONS).map(([filterType, filterDef]) => {
-                const isExpanded = expandedSections[filterType];
-                const sectionStats = filterStats[filterType];
-                const availableCount = Object.values(sectionStats).filter(stat => stat.available).length;
-                const selectedCount = Object.values(sectionStats).filter(stat => stat.selected).length;
-                
-                return (
-                  <div 
-                    key={filterType} 
-                    className={`filter-section ${availableCount === 0 ? 'no-options' : ''}`}
-                  >
-                    {/* Section Header */}
-                    <button
-                      className={`section-header ${isExpanded ? 'expanded' : ''}`}
-                      onClick={() => toggleSection(filterType)}
-                    >
-                      <div className="section-title">
-                        <span className="section-icon">{filterDef.icon}</span>
-                        <span className="section-name">{filterDef.label}</span>
-                      </div>
-                      <div className="section-info">
-                        {selectedCount > 0 && (
-                          <span className="selected-badge">{selectedCount}</span>
-                        )}
-                        <span className="expand-arrow">{isExpanded ? '▼' : '▶'}</span>
-                      </div>
-                    </button>
-
-                    {/* Section Options */}
-                    {isExpanded && (
-                      <div className="section-options">
-                        {Object.entries(filterDef.options).map(([optionKey, optionLabel]) => {
-                          const stat = sectionStats[optionKey];
-                          const isSelected = stat.selected;
-                          const isAvailable = stat.available;
-                          const count = stat.count;
-
-                          return (
-                            <label
-                              key={optionKey}
-                              className={`filter-option ${!isAvailable ? 'unavailable' : ''} ${isSelected ? 'selected' : ''}`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={(e) => handleFilterChange(filterType, optionKey, e.target.checked)}
-                                disabled={!isAvailable}
-                              />
-                              <span className="option-label">{optionLabel}</span>
-                              <span className="option-count">
-                                ({count})
-                              </span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+            <div className="modal-content">
+              {isModalOpen === 'more' ? (
+                // Show all secondary filters
+                Object.entries(SECONDARY_FILTERS).map(([filterType, filterDef]) => (
+                  <FilterSection
+                    key={filterType}
+                    filterType={filterType}
+                    filterDef={filterDef}
+                    filterStats={filterStats[filterType] || {}}
+                    selectedValues={filters[filterType] || []}
+                    onFilterChange={handleFilterChange}
+                  />
+                ))
+              ) : (
+                // Show specific primary filter
+                <FilterSection
+                  filterType={isModalOpen}
+                  filterDef={PRIMARY_FILTERS[isModalOpen]}
+                  filterStats={filterStats[isModalOpen] || {}}
+                  selectedValues={filters[isModalOpen] || []}
+                  onFilterChange={handleFilterChange}
+                />
+              )}
             </div>
 
-            {/* Panel Footer */}
-            <div className="filter-panel-footer">
+            <div className="modal-footer">
               <button 
                 className="apply-btn"
-                onClick={() => setIsOpen(false)}
+                onClick={() => setIsModalOpen(false)}
               >
                 Apply Filters
               </button>
@@ -414,55 +343,193 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
       )}
 
       <style jsx>{`
-        .filter-button-container {
+        .filter-presets {
           position: fixed;
-          top: 20px;
+          top: 80px;
+          left: 20px;
           right: 20px;
-          z-index: 1000;
+          z-index: 800;
+          pointer-events: none;
         }
 
-        .filter-toggle-btn {
+        .preset-chips {
+          display: flex;
+          gap: 8px;
+          overflow-x: auto;
+          padding: 8px 0;
+          pointer-events: auto;
+        }
+
+        .preset-chip {
+          display: flex;
+          align-items: center;
+          gap: 6px;
           background: white;
-          border: 2px solid #e5e7eb;
-          border-radius: 25px;
-          padding: 12px 20px;
-          font-size: 16px;
-          font-weight: 600;
+          border: 1px solid #e5e7eb;
+          border-radius: 20px;
+          padding: 8px 12px;
+          font-size: 13px;
+          font-weight: 500;
           color: #374151;
           cursor: pointer;
-          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
           transition: all 0.2s ease;
+          white-space: nowrap;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .preset-chip:hover {
+          border-color: #3b82f6;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .preset-chip.active {
+          background: #3b82f6;
+          border-color: #2563eb;
+          color: white;
+        }
+
+        .primary-filters {
+          position: fixed;
+          bottom: 20px;
+          left: 20px;
+          right: 20px;
+          z-index: 800;
+          pointer-events: none;
+        }
+
+        .filter-chips-container {
+          display: flex;
+          gap: 8px;
+          overflow-x: auto;
+          padding: 8px 0;
+          pointer-events: auto;
+        }
+
+        .filter-chip, .more-filters-chip {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 20px;
+          padding: 10px 14px;
+          font-size: 14px;
+          font-weight: 500;
+          color: #374151;
+          cursor: pointer;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .filter-chip:hover:not(.disabled), .more-filters-chip:hover {
+          border-color: #3b82f6;
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .filter-chip.active {
+          background: #3b82f6;
+          border-color: #2563eb;
+          color: white;
+        }
+
+        .filter-chip.disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+
+        .chip-icon {
+          font-size: 16px;
+        }
+
+        .chip-count {
+          background: rgba(255,255,255,0.3);
+          border-radius: 10px;
+          padding: 2px 6px;
+          font-size: 11px;
+          font-weight: 600;
+          margin-left: 2px;
+        }
+
+        .filter-chip.active .chip-count {
+          background: rgba(255,255,255,0.3);
+        }
+
+        .more-filters-chip {
+          background: #f3f4f6;
+          border-color: #d1d5db;
+        }
+
+        .results-summary {
+          margin-top: 12px;
+          text-align: center;
+          pointer-events: auto;
+        }
+
+        .results-count {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          background: rgba(255,255,255,0.95);
+          backdrop-filter: blur(10px);
+          border-radius: 12px;
+          padding: 8px 16px;
+          font-size: 13px;
+          color: #374151;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .clear-btn {
+          background: none;
+          border: none;
+          color: #3b82f6;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          padding: 2px 6px;
+          border-radius: 4px;
+        }
+
+        .clear-btn:hover {
+          background: rgba(59, 130, 246, 0.1);
+        }
+
+        .empty-state {
           display: flex;
           align-items: center;
           gap: 8px;
-          min-width: 120px;
-          justify-content: center;
+          background: rgba(255,255,255,0.95);
+          backdrop-filter: blur(10px);
+          border-radius: 12px;
+          padding: 12px 16px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .filter-toggle-btn:hover {
-          background: #f9fafb;
-          border-color: #3b82f6;
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+        .empty-icon {
+          font-size: 16px;
         }
 
-        .filter-toggle-btn.has-filters {
-          background: #3b82f6;
-          color: white;
-          border-color: #2563eb;
+        .empty-text {
+          flex: 1;
+          font-size: 13px;
+          color: #6b7280;
         }
 
-        .filter-badge {
+        .adjust-filters-btn {
           background: #ef4444;
           color: white;
-          border-radius: 12px;
-          padding: 2px 8px;
+          border: none;
+          border-radius: 6px;
+          padding: 4px 8px;
           font-size: 12px;
-          font-weight: 700;
-          margin-left: 4px;
+          font-weight: 500;
+          cursor: pointer;
         }
 
-        .filter-overlay {
+        .filter-modal-overlay {
           position: fixed;
           top: 0;
           left: 0;
@@ -475,11 +542,11 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
           justify-content: center;
         }
 
-        .filter-panel {
+        .filter-modal {
           background: white;
           width: 100%;
           max-width: 500px;
-          max-height: 85vh;
+          max-height: 80vh;
           border-radius: 20px 20px 0 0;
           display: flex;
           flex-direction: column;
@@ -487,15 +554,11 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
         }
 
         @keyframes slideUp {
-          from {
-            transform: translateY(100%);
-          }
-          to {
-            transform: translateY(0);
-          }
+          from { transform: translateY(100%); }
+          to { transform: translateY(0); }
         }
 
-        .filter-panel-header {
+        .modal-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -503,164 +566,30 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
           border-bottom: 1px solid #e5e7eb;
         }
 
-        .filter-panel-header h2 {
+        .modal-header h3 {
           margin: 0;
-          font-size: 20px;
+          font-size: 18px;
           font-weight: 700;
           color: #1f2937;
         }
 
-        .close-btn {
+        .modal-close {
           background: none;
           border: none;
-          font-size: 24px;
+          font-size: 20px;
           color: #6b7280;
           cursor: pointer;
           padding: 4px;
           border-radius: 50%;
-          width: 36px;
-          height: 36px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
         }
 
-        .close-btn:hover {
-          background: #f3f4f6;
-          color: #374151;
-        }
-
-        .active-filters-summary {
-          padding: 16px 24px;
-          background: #eff6ff;
-          border-bottom: 1px solid #e5e7eb;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          font-size: 14px;
-        }
-
-        .clear-all-btn {
-          background: none;
-          border: none;
-          color: #3b82f6;
-          font-weight: 600;
-          cursor: pointer;
-          padding: 4px 8px;
-          border-radius: 4px;
-        }
-
-        .clear-all-btn:hover {
-          background: rgba(59, 130, 246, 0.1);
-        }
-
-        .filter-content {
+        .modal-content {
           flex: 1;
           overflow-y: auto;
           padding: 16px 24px;
         }
 
-        .filter-section {
-          margin-bottom: 16px;
-        }
-
-        .filter-section.no-options {
-          opacity: 0.5;
-        }
-
-        .section-header {
-          width: 100%;
-          background: none;
-          border: none;
-          padding: 12px 0;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          cursor: pointer;
-          border-bottom: 1px solid #f3f4f6;
-        }
-
-        .section-title {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-        }
-
-        .section-icon {
-          font-size: 18px;
-        }
-
-        .section-name {
-          font-weight: 600;
-          color: #374151;
-          font-size: 16px;
-        }
-
-        .section-info {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-
-        .selected-badge {
-          background: #3b82f6;
-          color: white;
-          border-radius: 12px;
-          padding: 2px 8px;
-          font-size: 12px;
-          font-weight: 600;
-        }
-
-        .expand-arrow {
-          color: #9ca3af;
-          font-size: 12px;
-          transition: transform 0.2s ease;
-        }
-
-        .section-options {
-          padding: 8px 0 0 30px;
-        }
-
-        .filter-option {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 8px 0;
-          cursor: pointer;
-          font-size: 14px;
-        }
-
-        .filter-option.unavailable {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
-
-        .filter-option.selected {
-          color: #3b82f6;
-          font-weight: 500;
-        }
-
-        .filter-option input[type="checkbox"] {
-          margin: 0;
-          width: 18px;
-          height: 18px;
-        }
-
-        .option-label {
-          flex: 1;
-        }
-
-        .option-count {
-          color: #6b7280;
-          font-size: 12px;
-          font-weight: 500;
-        }
-
-        .filter-option.selected .option-count {
-          color: #3b82f6;
-        }
-
-        .filter-panel-footer {
+        .modal-footer {
           padding: 16px 24px;
           border-top: 1px solid #e5e7eb;
         }
@@ -675,22 +604,16 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
           font-size: 16px;
           font-weight: 600;
           cursor: pointer;
-          transition: background-color 0.2s ease;
         }
 
-        .apply-btn:hover {
-          background: #2563eb;
-        }
-
-        /* Desktop adjustments */
         @media (min-width: 768px) {
-          .filter-overlay {
+          .filter-modal-overlay {
             align-items: center;
             justify-content: flex-end;
             padding-right: 20px;
           }
 
-          .filter-panel {
+          .filter-modal {
             width: 400px;
             max-height: 80vh;
             border-radius: 12px;
@@ -698,15 +621,116 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
           }
 
           @keyframes slideLeft {
-            from {
-              transform: translateX(100%);
-            }
-            to {
-              transform: translateX(0);
-            }
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
           }
         }
       `}</style>
     </>
+  );
+}
+
+// Helper component for filter sections
+function FilterSection({ filterType, filterDef, filterStats, selectedValues, onFilterChange }) {
+  return (
+    <div className="filter-section">
+      <h4 className="section-title">
+        <span className="section-icon">{filterDef.icon}</span>
+        {filterDef.label}
+      </h4>
+      
+      <div className="section-options">
+        {Object.entries(filterDef.options).map(([optionKey, optionLabel]) => {
+          const stat = filterStats[optionKey] || { count: 0, available: false };
+          const isSelected = selectedValues.includes(optionKey);
+          
+          return (
+            <label
+              key={optionKey}
+              className={`option-label ${!stat.available ? 'unavailable' : ''} ${isSelected ? 'selected' : ''}`}
+            >
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={(e) => onFilterChange(filterType, optionKey, e.target.checked)}
+                disabled={!stat.available}
+              />
+              <span className="option-text">{optionLabel}</span>
+              <span className="option-count">({stat.count})</span>
+            </label>
+          );
+        })}
+      </div>
+
+      <style jsx>{`
+        .filter-section {
+          margin-bottom: 24px;
+        }
+
+        .section-title {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin: 0 0 12px 0;
+          font-size: 16px;
+          font-weight: 600;
+          color: #374151;
+        }
+
+        .section-icon {
+          font-size: 18px;
+        }
+
+        .section-options {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 8px;
+        }
+
+        .option-label {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 12px;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: background-color 0.2s ease;
+          font-size: 14px;
+        }
+
+        .option-label:hover:not(.unavailable) {
+          background: #f9fafb;
+        }
+
+        .option-label.selected {
+          background: #eff6ff;
+          color: #3b82f6;
+        }
+
+        .option-label.unavailable {
+          opacity: 0.4;
+          cursor: not-allowed;
+        }
+
+        .option-text {
+          flex: 1;
+        }
+
+        .option-count {
+          font-size: 12px;
+          color: #6b7280;
+        }
+
+        .option-label.selected .option-count {
+          color: #3b82f6;
+        }
+
+        @media (max-width: 768px) {
+          .section-options {
+            grid-template-columns: 1fr;
+          }
+        }
+      `}</style>
+    </div>
   );
 }
