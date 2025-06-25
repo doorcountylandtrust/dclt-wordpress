@@ -23,6 +23,7 @@ const PreserveMap = () => {
 
   return (
 <div style={{ height: '600px', width: '100%' }}>
+  
   <MapContainer
     center={[44.8, -87.4]}
     zoom={10}

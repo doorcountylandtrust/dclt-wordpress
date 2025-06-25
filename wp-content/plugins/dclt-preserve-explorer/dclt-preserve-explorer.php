@@ -48,19 +48,13 @@ function dclt_enqueue_preserve_explorer_assets() {
         true
     );
 
-    // Tailwind (CDN version for now)
-    wp_enqueue_style(
-        'tailwind',
-        'https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css',
-        array(),
-        '2.2.19'
-    );
+  
 
     // React (from WP core)
     wp_enqueue_script('react');
     wp_enqueue_script('react-dom');
 
-    // Your compiled React app
+     // Your compiled React app
     wp_enqueue_script(
         'dclt-preserve-explorer',
         plugin_dir_url(__FILE__) . 'assets/js/preserve-explorer.js',
@@ -69,13 +63,13 @@ function dclt_enqueue_preserve_explorer_assets() {
         true
     );
 
-    // Optional: Custom CSS (commented out unless in use)
-    // wp_enqueue_style(
-    //     'dclt-preserve-explorer',
-    //     plugin_dir_url(__FILE__) . 'assets/css/preserve-explorer.css',
-    //     array(),
-    //     DCLT_PRESERVE_VERSION
-    // );
+    // Tailwind CSS compiled locally
+    wp_enqueue_style(
+        'dclt-preserve-style',
+        plugin_dir_url(__FILE__) . 'assets/style.css',
+        array(),
+        filemtime(plugin_dir_path(__FILE__) . 'assets/style.css')
+    );
 
     // Localize REST API data
     wp_localize_script('dclt-preserve-explorer', 'preserveExplorerData', array(
