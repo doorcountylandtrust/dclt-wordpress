@@ -24,13 +24,15 @@ if (!defined('DCLT_PRESERVE_VERSION')) {
     define('DCLT_PRESERVE_VERSION', '1.0.0');
 }
 
-// Autoload files
-require_once plugin_dir_path(__FILE__) . 'includes/class-preserve-post-type.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-preserve-rest-api.php';
-require_once plugin_dir_path(__FILE__) . 'includes/class-preserve-meta-boxes.php';
+// Autoload files (ADDED THE NEW FILTER OPTIONS CLASS)
+require_once DCLT_PRESERVE_PLUGIN_DIR . 'includes/class-preserve-post-type.php';
+require_once DCLT_PRESERVE_PLUGIN_DIR . 'includes/class-preserve-filter-options.php';  // NEW!
+require_once DCLT_PRESERVE_PLUGIN_DIR . 'includes/class-preserve-rest-api.php';
+require_once DCLT_PRESERVE_PLUGIN_DIR . 'includes/class-preserve-meta-boxes.php';
 
-// Instantiate core classes
+// Instantiate core classes (ADDED THE NEW FILTER OPTIONS CLASS)
 new DCLT_Preserve_Post_Type();
+new DCLT_Preserve_Filter_Options();  // NEW!
 new DCLT_Preserve_REST_API();
 new DCLT_Preserve_Meta_Boxes();
 
@@ -45,76 +47,85 @@ add_action('rest_after_insert_preserve', function($post, $request, $creating) {
 }, 10, 3);
 
 // Enqueue assets for Preserve Explorer page
-function dclt_enqueue_preserve_explorer_assets() {
-    // You can change this back to conditional once working: if (!is_page('preserve-explorer')) return;
+if (!function_exists('dclt_enqueue_preserve_explorer_assets')) {
+    function dclt_enqueue_preserve_explorer_assets() {
+        // You can change this back to conditional once working: if (!is_page('preserve-explorer')) return;
 
-    // Leaflet
-    wp_enqueue_style(
-        'leaflet',
-        'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-        array(),
-        '1.9.4'
-    );
-    wp_enqueue_script(
-        'leaflet',
-        'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
-        array(),
-        '1.9.4',
-        true
-    );
+        // Leaflet
+        wp_enqueue_style(
+            'leaflet',
+            'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
+            array(),
+            '1.9.4'
+        );
+        wp_enqueue_script(
+            'leaflet',
+            'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js',
+            array(),
+            '1.9.4',
+            true
+        );
 
-    // React (from WP core)
-    wp_enqueue_script('react');
-    wp_enqueue_script('react-dom');
+        // React (from WP core)
+        wp_enqueue_script('react');
+        wp_enqueue_script('react-dom');
 
-    // Your compiled React app
-    wp_enqueue_script(
-        'dclt-preserve-explorer',
-        plugin_dir_url(__FILE__) . 'assets/js/preserve-explorer.js',
-        array('react', 'react-dom', 'leaflet'),
-        DCLT_PRESERVE_VERSION,
-        true
-    );
+        // Your compiled React app
+        wp_enqueue_script(
+            'dclt-preserve-explorer',
+            plugin_dir_url(__FILE__) . 'assets/js/preserve-explorer.js',
+            array('react', 'react-dom', 'leaflet'),
+            DCLT_PRESERVE_VERSION,
+            true
+        );
 
-    // Tailwind CSS compiled locally
-    wp_enqueue_style(
-        'dclt-preserve-style',
-        plugin_dir_url(__FILE__) . 'assets/style.css',
-        array(),
-        filemtime(plugin_dir_path(__FILE__) . 'assets/style.css')
-    );
+        // Tailwind CSS compiled locally
+        wp_enqueue_style(
+            'dclt-preserve-style',
+            plugin_dir_url(__FILE__) . 'assets/style.css',
+            array(),
+            filemtime(plugin_dir_path(__FILE__) . 'assets/style.css')
+        );
 
-    // Enhanced API data with debugging
-    $api_url = esc_url_raw(rest_url('wp/v2/preserves'));
-    
-    // Debug: Log the API URL being used
-    error_log('DCLT Preserve Explorer: API URL being passed to frontend: ' . $api_url);
-    
-    // Localize REST API data
-    wp_localize_script('dclt-preserve-explorer', 'preserveExplorerData', array(
-        'apiUrl' => $api_url,
-        'nonce' => wp_create_nonce('wp_rest'),
-        'debug' => WP_DEBUG, // Pass debug mode to frontend
-    ));
+        // Enhanced API data with debugging
+        $api_url = esc_url_raw(rest_url('wp/v2/preserves'));
+        $filter_options_url = esc_url_raw(rest_url('dclt/v1/filter-options'));  // NEW: Dynamic filter options endpoint
+        
+        // Debug: Log the API URLs being used
+        error_log('DCLT Preserve Explorer: API URL being passed to frontend: ' . $api_url);
+        error_log('DCLT Preserve Explorer: Filter Options URL: ' . $filter_options_url);
+        
+        // Localize REST API data
+        wp_localize_script('dclt-preserve-explorer', 'preserveExplorerData', array(
+            'apiUrl' => $api_url,
+            'filterOptionsUrl' => $filter_options_url,  // NEW: Pass filter options endpoint to React
+            'nonce' => wp_create_nonce('wp_rest'),
+            'debug' => WP_DEBUG, // Pass debug mode to frontend
+        ));
+    }
 }
 add_action('wp_enqueue_scripts', 'dclt_enqueue_preserve_explorer_assets');
 
 // Register template for page dropdown in Gutenberg
-function dclt_register_preserve_template($templates) {
-    $templates['page-preserve-explorer.php'] = 'Preserve Explorer';
-    return $templates;
+if (!function_exists('dclt_register_preserve_template')) {
+    function dclt_register_preserve_template($templates) {
+        $templates['page-preserve-explorer.php'] = 'Preserve Explorer';
+        return $templates;
+    }
 }
 add_filter('theme_page_templates', 'dclt_register_preserve_template');
 
 // Load template from plugin directory
-function dclt_load_preserve_template($template) {
-    if (is_page() && get_page_template_slug() === 'page-preserve-explorer.php') {
-        $plugin_template = plugin_dir_path(__FILE__) . 'templates/page-preserve-explorer.php';
-        if (file_exists($plugin_template)) {
-            return $plugin_template;
+if (!function_exists('dclt_load_preserve_template')) {
+    function dclt_load_preserve_template($template) {
+        if (is_page() && get_page_template_slug() === 'page-preserve-explorer.php') {
+            $plugin_template = plugin_dir_path(__FILE__) . 'templates/page-preserve-explorer.php';
+            if (file_exists($plugin_template)) {
+                return $plugin_template;
+            }
         }
+        return $template;
     }
-    return $template;
 }
 add_filter('template_include', 'dclt_load_preserve_template');
 
@@ -129,25 +140,29 @@ add_action('admin_notices', function() {
 });
 
 // Debug function - remove after fixing
-function dclt_debug_preserves_endpoint() {
-    if (isset($_GET['dclt_debug']) && current_user_can('manage_options')) {
-        header('Content-Type: application/json');
-        
-        $preserves = get_posts([
-            'post_type' => 'preserve',
-            'post_status' => 'publish',
-            'numberposts' => -1
-        ]);
-        
-        $debug_data = [
-            'preserve_count' => count($preserves),
-            'api_url' => rest_url('wp/v2/preserves'),
-            'first_preserve_meta' => $preserves ? get_post_meta($preserves[0]->ID) : null,
-            'rest_api_enabled' => function_exists('rest_url'),
-        ];
-        
-        echo json_encode($debug_data, JSON_PRETTY_PRINT);
-        exit;
+if (!function_exists('dclt_debug_preserves_endpoint')) {
+    function dclt_debug_preserves_endpoint() {
+        if (isset($_GET['dclt_debug']) && current_user_can('manage_options')) {
+            header('Content-Type: application/json');
+            
+            $preserves = get_posts([
+                'post_type' => 'preserve',
+                'post_status' => 'publish',
+                'numberposts' => -1
+            ]);
+            
+            $debug_data = [
+                'preserve_count' => count($preserves),
+                'api_url' => rest_url('wp/v2/preserves'),
+                'filter_options_url' => rest_url('dclt/v1/filter-options'),  // NEW
+                'first_preserve_meta' => $preserves ? get_post_meta($preserves[0]->ID) : null,
+                'rest_api_enabled' => function_exists('rest_url'),
+                'dynamic_filters_active' => class_exists('DCLT_Preserve_Filter_Options'),  // NEW
+            ];
+            
+            echo json_encode($debug_data, JSON_PRETTY_PRINT);
+            exit;
+        }
     }
 }
 add_action('init', 'dclt_debug_preserves_endpoint');

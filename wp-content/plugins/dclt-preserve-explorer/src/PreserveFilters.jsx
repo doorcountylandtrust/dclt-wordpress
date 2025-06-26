@@ -1,127 +1,27 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 
-// Tiered filter structure - Primary vs Secondary
-const PRIMARY_FILTERS = {
-  region: {
-    label: 'Region',
-    icon: '📍',
-    preset: true,
-    options: {
-      northern_door: 'Northern Door',
-      central_door: 'Central Door', 
-      southern_door: 'Southern Door',
-      washington_island: 'Washington Island'
-    }
-  },
-  activity: {
-    label: 'Activity',
-    icon: '🥾',
-    preset: true,
-    options: {
-      hiking: 'Hiking',
-      birdwatching: 'Birdwatching',
-      photography: 'Photography',
-      nature_study: 'Nature Study',
-      wildflower_viewing: 'Wildflower Viewing',
-      cross_country_skiing: 'Cross Country Skiing',
-      snowshoeing: 'Snowshoeing'
-    }
-  },
-  accessibility: {
-    label: 'Accessibility',
-    icon: '♿',
-    preset: true,
-    options: {
-      wheelchair_accessible: 'Wheelchair Accessible',
-      stroller_friendly: 'Stroller Friendly',
-      uneven_terrain: 'Uneven Terrain',
-      mobility_challenges: 'Limited Mobility'
-    }
-  },
-  difficulty: {
-    label: 'Difficulty',
-    icon: '⛰️',
-    preset: true,
-    options: {
-      easy: 'Easy',
-      moderate: 'Moderate',
-      difficult: 'Difficult'
-    }
-  }
-};
-
-const SECONDARY_FILTERS = {
-  ecology: {
-    label: 'Ecology',
-    icon: '🌿',
-    options: {
-      prairie: 'Prairie',
-      wetland: 'Wetland',
-      forest: 'Forest',
-      shoreline: 'Shoreline',
-      cedar_swamp: 'Cedar Swamp',
-      oak_savanna: 'Oak Savanna',
-      limestone_bluff: 'Limestone Bluff'
-    }
-  },
-  available_facilities: {
-    label: 'Facilities',
-    icon: '🏢',
-    options: {
-      restrooms: 'Restrooms',
-      picnic_tables: 'Picnic Tables',
-      water_fountains: 'Water Fountains',
-      parking_available: 'Parking Available'
-    }
-  },
-  notable_features: {
-    label: 'Features',
-    icon: '⭐',
-    options: {
-      waterfalls: 'Waterfalls',
-      overlooks: 'Scenic Overlooks',
-      historic_sites: 'Historic Sites',
-      rare_plants: 'Rare Plants'
-    }
-  },
-  photography: {
-    label: 'Photography',
-    icon: '📸',
-    options: {
-      landscapes: 'Landscapes',
-      wildlife: 'Wildlife',
-      macro_flowers: 'Macro/Flowers',
-      sunrise_sunset: 'Sunrise/Sunset'
-    }
-  }
-};
-
-// Filter presets for quick access
+// Filter presets - these can remain hardcoded as they're UI presets
 const FILTER_PRESETS = {
   family_friendly: {
     label: 'Family Friendly',
     icon: '👨‍👩‍👧‍👦',
     filters: {
       difficulty: ['easy'],
-      accessibility: ['stroller_friendly'],
-      available_facilities: ['parking_available']
+      accessibility: ['stroller_friendly']
     }
   },
   photography: {
     label: 'Photography',
     icon: '📷',
     filters: {
-      activity: ['photography'],
-      notable_features: ['overlooks', 'waterfalls'],
-      photography: ['landscapes', 'wildlife']
+      activity: ['photography']
     }
   },
   accessible: {
     label: 'Accessible',
     icon: '♿',
     filters: {
-      accessibility: ['wheelchair_accessible', 'stroller_friendly'],
-      available_facilities: ['parking_available']
+      accessibility: ['wheelchair_accessible', 'stroller_friendly']
     }
   }
 };
@@ -129,33 +29,103 @@ const FILTER_PRESETS = {
 export default function PreserveFilters({ preserves = [], filters = {}, onFiltersChange }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState(null);
+  const [filterOptions, setFilterOptions] = useState({ primary: {}, secondary: {} });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Fetch dynamic filter options from WordPress
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        setLoading(true);
+        
+        // Use the global preserveExplorerData passed from WordPress
+        const filterOptionsUrl = window.preserveExplorerData?.filterOptionsUrl || '/wp-json/dclt/v1/filter-options';
+        
+        console.log('Fetching filter options from:', filterOptionsUrl);
+        
+        const response = await fetch(filterOptionsUrl);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Filter options received:', data);
+        
+        // Validate the response structure
+        if (data && typeof data === 'object') {
+          if (data.primary || data.secondary) {
+            // Data is already in the expected format
+            setFilterOptions(data);
+          } else {
+            // Fallback: treat response as flat structure and categorize
+            const primary = {};
+            const secondary = {};
+            const primaryKeys = ['region', 'activity', 'accessibility', 'difficulty'];
+            
+            Object.entries(data || {}).forEach(([key, value]) => {
+              if (primaryKeys.includes(key)) {
+                primary[key] = value;
+              } else {
+                secondary[key] = value;
+              }
+            });
+            
+            setFilterOptions({ primary, secondary });
+          }
+        } else {
+          throw new Error('Invalid filter options data received');
+        }
+        
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch filter options:', err);
+        setError(err.message);
+        
+        // Fallback to empty structure
+        setFilterOptions({ primary: {}, secondary: {} });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFilterOptions();
+  }, []);
+
+  // Combine primary and secondary filters for stats calculation
+  const allFilters = useMemo(() => {
+    return { ...filterOptions.primary, ...filterOptions.secondary };
+  }, [filterOptions]);
 
   // Calculate filter stats for all filters
   const filterStats = useMemo(() => {
-    const allFilters = { ...PRIMARY_FILTERS, ...SECONDARY_FILTERS };
     const stats = {};
     
     Object.keys(allFilters).forEach(filterType => {
       stats[filterType] = {};
       
-      Object.keys(allFilters[filterType].options).forEach(optionKey => {
-        const count = preserves.filter(preserve => {
-          if (!preserve?.meta) return false;
-          const preserveFilters = preserve.meta[`_preserve_filter_${filterType}`] || [];
-          const preserveArray = Array.isArray(preserveFilters) ? preserveFilters : [preserveFilters];
-          return preserveArray.includes(optionKey);
-        }).length;
-        
-        stats[filterType][optionKey] = {
-          count,
-          available: count > 0,
-          selected: filters[filterType]?.includes(optionKey) || false
-        };
-      });
+      const filterDef = allFilters[filterType];
+      if (filterDef && filterDef.options) {
+        Object.keys(filterDef.options).forEach(optionKey => {
+          const count = preserves.filter(preserve => {
+            if (!preserve?.meta) return false;
+            const preserveFilters = preserve.meta[`_preserve_filter_${filterType}`] || [];
+            const preserveArray = Array.isArray(preserveFilters) ? preserveFilters : [preserveFilters];
+            return preserveArray.includes(optionKey);
+          }).length;
+          
+          stats[filterType][optionKey] = {
+            count,
+            available: count > 0,
+            selected: filters[filterType]?.includes(optionKey) || false
+          };
+        });
+      }
     });
     
     return stats;
-  }, [preserves, filters]);
+  }, [preserves, filters, allFilters]);
 
   // Handle filter changes
   const handleFilterChange = (filterType, optionKey, checked) => {
@@ -209,6 +179,107 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
   // Show empty state
   const showEmptyState = totalActiveFilters > 0 && filteredCount === 0;
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="filter-loading">
+        <div className="loading-spinner">⏳</div>
+        <p>Loading filter options...</p>
+        <style jsx>{`
+          .filter-loading {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 800;
+          }
+          .loading-spinner {
+            font-size: 24px;
+            margin-bottom: 8px;
+            animation: spin 2s linear infinite;
+          }
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="filter-error">
+        <div className="error-icon">⚠️</div>
+        <p>Could not load filter options</p>
+        <small>{error}</small>
+        <button onClick={() => window.location.reload()}>Retry</button>
+        <style jsx>{`
+          .filter-error {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            background: #fee;
+            color: #c33;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #fcc;
+            z-index: 800;
+          }
+          .error-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+          }
+          .filter-error button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background: #c33;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // No filters available
+  if (Object.keys(allFilters).length === 0) {
+    return (
+      <div className="no-filters">
+        <div className="no-filters-icon">🔧</div>
+        <p>No filter options configured</p>
+        <style jsx>{`
+          .no-filters {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 800;
+          }
+          .no-filters-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+          }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Filter Presets Row */}
@@ -230,7 +301,7 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
       {/* Primary Filter Chips */}
       <div className="primary-filters">
         <div className="filter-chips-container">
-          {Object.entries(PRIMARY_FILTERS).map(([filterType, filterDef]) => {
+          {Object.entries(filterOptions.primary).map(([filterType, filterDef]) => {
             const hasSelections = filters[filterType]?.length > 0;
             const availableCount = Object.values(filterStats[filterType] || {})
               .filter(stat => stat.available).length;
@@ -242,8 +313,8 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
                 onClick={() => setIsModalOpen(filterType)}
                 disabled={availableCount === 0}
               >
-                <span className="chip-icon">{filterDef.icon}</span>
-                <span className="chip-label">{filterDef.label}</span>
+                <span className="chip-icon">{filterDef.icon || '🔧'}</span>
+                <span className="chip-label">{filterDef.label || filterType}</span>
                 {hasSelections && (
                   <span className="chip-count">{filters[filterType].length}</span>
                 )}
@@ -251,13 +322,15 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
             );
           })}
           
-          <button
-            className="more-filters-chip"
-            onClick={() => setIsModalOpen('more')}
-          >
-            <span className="chip-icon">⚙️</span>
-            <span className="chip-label">More</span>
-          </button>
+          {Object.keys(filterOptions.secondary).length > 0 && (
+            <button
+              className="more-filters-chip"
+              onClick={() => setIsModalOpen('more')}
+            >
+              <span className="chip-icon">⚙️</span>
+              <span className="chip-label">More</span>
+            </button>
+          )}
         </div>
 
         {/* Results Summary */}
@@ -289,13 +362,16 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
         </div>
       </div>
 
-      {/* Detailed Filter Panel - Side Panel on Desktop, Partial Overlay on Mobile */}
+      {/* Detailed Filter Panel */}
       {isModalOpen && (
         <div className="filter-panel-overlay">
           <div className="filter-panel">
             <div className="panel-header">
               <h3>
-                {isModalOpen === 'more' ? 'More Filters' : PRIMARY_FILTERS[isModalOpen]?.label}
+                {isModalOpen === 'more' 
+                  ? 'More Filters' 
+                  : (filterOptions.primary[isModalOpen]?.label || filterOptions.secondary[isModalOpen]?.label || isModalOpen)
+                }
               </h3>
               <button 
                 className="panel-close"
@@ -308,7 +384,7 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
             <div className="panel-content">
               {isModalOpen === 'more' ? (
                 // Show all secondary filters
-                Object.entries(SECONDARY_FILTERS).map(([filterType, filterDef]) => (
+                Object.entries(filterOptions.secondary).map(([filterType, filterDef]) => (
                   <FilterSection
                     key={filterType}
                     filterType={filterType}
@@ -319,10 +395,10 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
                   />
                 ))
               ) : (
-                // Show specific primary filter
+                // Show specific filter (primary or secondary)
                 <FilterSection
                   filterType={isModalOpen}
-                  filterDef={PRIMARY_FILTERS[isModalOpen]}
+                  filterDef={allFilters[isModalOpen]}
                   filterStats={filterStats[isModalOpen] || {}}
                   selectedValues={filters[isModalOpen] || []}
                   onFilterChange={handleFilterChange}
@@ -615,12 +691,58 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
 
 // Helper component for filter sections
 function FilterSection({ filterType, filterDef, filterStats, selectedValues, onFilterChange }) {
+  if (!filterDef || !filterDef.options) {
+    return (
+      <div className="filter-section">
+        <h4 className="section-title">
+          <span className="section-icon">{filterDef?.icon || '🔧'}</span>
+          {filterDef?.label || filterType}
+        </h4>
+        <p className="no-options">No options available for this filter.</p>
+        
+        <style jsx>{`
+          .filter-section {
+            margin-bottom: 24px;
+          }
+          
+          .section-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 0 0 12px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #374151;
+          }
+          
+          .section-icon {
+            font-size: 18px;
+          }
+          
+          .no-options {
+            color: #6b7280;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+            margin: 0;
+          }
+        `}</style>
+      </div>
+    );
+  }
+
   return (
     <div className="filter-section">
       <h4 className="section-title">
-        <span className="section-icon">{filterDef.icon}</span>
-        {filterDef.label}
+        <span className="section-icon">{filterDef.icon || '🔧'}</span>
+        {filterDef.label || filterType}
       </h4>
+      
+      {filterDef.description && (
+        <p className="section-description">{filterDef.description}</p>
+      )}
       
       <div className="section-options">
         {Object.entries(filterDef.options).map(([optionKey, optionLabel]) => {
@@ -662,6 +784,14 @@ function FilterSection({ filterType, filterDef, filterStats, selectedValues, onF
 
         .section-icon {
           font-size: 18px;
+        }
+
+        .section-description {
+          margin: 0 0 16px 0;
+          color: #6b7280;
+          font-size: 14px;
+          font-style: italic;
+          line-height: 1.5;
         }
 
         .section-options {
