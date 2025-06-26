@@ -289,23 +289,23 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
         </div>
       </div>
 
-      {/* Detailed Filter Modal */}
+      {/* Detailed Filter Panel - Side Panel on Desktop, Partial Overlay on Mobile */}
       {isModalOpen && (
-        <div className="filter-modal-overlay" onClick={() => setIsModalOpen(false)}>
-          <div className="filter-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
+        <div className="filter-panel-overlay">
+          <div className="filter-panel">
+            <div className="panel-header">
               <h3>
                 {isModalOpen === 'more' ? 'More Filters' : PRIMARY_FILTERS[isModalOpen]?.label}
               </h3>
               <button 
-                className="modal-close"
+                className="panel-close"
                 onClick={() => setIsModalOpen(false)}
               >
                 ✕
               </button>
             </div>
 
-            <div className="modal-content">
+            <div className="panel-content">
               {isModalOpen === 'more' ? (
                 // Show all secondary filters
                 Object.entries(SECONDARY_FILTERS).map(([filterType, filterDef]) => (
@@ -328,15 +328,6 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
                   onFilterChange={handleFilterChange}
                 />
               )}
-            </div>
-
-            <div className="modal-footer">
-              <button 
-                className="apply-btn"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Apply Filters
-              </button>
             </div>
           </div>
         </div>
@@ -529,51 +520,53 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
           cursor: pointer;
         }
 
-        .filter-modal-overlay {
+        .filter-panel-overlay {
           position: fixed;
           top: 0;
-          left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
+          width: 100%;
           z-index: 2000;
-          display: flex;
-          align-items: flex-end;
-          justify-content: center;
+          pointer-events: none;
         }
 
-        .filter-modal {
-          background: white;
+        .filter-panel {
+          position: absolute;
+          right: 0;
+          top: 0;
+          bottom: 0;
           width: 100%;
-          max-width: 500px;
-          max-height: 80vh;
-          border-radius: 20px 20px 0 0;
+          max-width: 380px;
+          background: white;
+          box-shadow: -4px 0 20px rgba(0,0,0,0.15);
           display: flex;
           flex-direction: column;
-          animation: slideUp 0.3s ease-out;
+          animation: slideLeft 0.3s ease-out;
+          pointer-events: auto;
         }
 
-        @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
+        @keyframes slideLeft {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
         }
 
-        .modal-header {
+        .panel-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
           padding: 20px 24px 16px;
           border-bottom: 1px solid #e5e7eb;
+          background: white;
         }
 
-        .modal-header h3 {
+        .panel-header h3 {
           margin: 0;
           font-size: 18px;
           font-weight: 700;
           color: #1f2937;
         }
 
-        .modal-close {
+        .panel-close {
           background: none;
           border: none;
           font-size: 20px;
@@ -581,48 +574,38 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
           cursor: pointer;
           padding: 4px;
           border-radius: 50%;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        .modal-content {
+        .panel-close:hover {
+          background: #f3f4f6;
+          color: #374151;
+        }
+
+        .panel-content {
           flex: 1;
           overflow-y: auto;
           padding: 16px 24px;
         }
 
-        .modal-footer {
-          padding: 16px 24px;
-          border-top: 1px solid #e5e7eb;
-        }
-
-        .apply-btn {
-          width: 100%;
-          background: #3b82f6;
-          color: white;
-          border: none;
-          border-radius: 12px;
-          padding: 16px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-        }
-
-        @media (min-width: 768px) {
-          .filter-modal-overlay {
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 20px;
+        @media (max-width: 768px) {
+          .filter-panel {
+            bottom: 0;
+            top: auto;
+            width: 100%;
+            max-width: none;
+            max-height: 70vh;
+            border-radius: 20px 20px 0 0;
+            animation: slideUp 0.3s ease-out;
           }
 
-          .filter-modal {
-            width: 400px;
-            max-height: 80vh;
-            border-radius: 12px;
-            animation: slideLeft 0.3s ease-out;
-          }
-
-          @keyframes slideLeft {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
+          @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
           }
         }
       `}</style>

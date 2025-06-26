@@ -27,9 +27,7 @@ function PreserveExplorerApp() {
   return (
     <div className="preserve-explorer-app">
       <div className="preserve-explorer-header">
-        <h1 className="text-2xl font-bold">🚀 Preserve Explorer is mounted!</h1>
-        <h2 className="text-4xl font-bold text-red-600">Tailwind is Working</h2>
-        <p className="text-gray-700 mt-2">Now let's add Leaflet and filters.</p>
+      
       </div>
 
       {/* Filters Component */}

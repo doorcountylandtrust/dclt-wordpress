@@ -58,7 +58,7 @@ Error generating stack: `+n.message+`
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }
         }
-      `})]})}const mo={region:{label:"Region",icon:"📍",preset:!0,options:{northern_door:"Northern Door",central_door:"Central Door",southern_door:"Southern Door",washington_island:"Washington Island"}},activity:{label:"Activity",icon:"🥾",preset:!0,options:{hiking:"Hiking",birdwatching:"Birdwatching",photography:"Photography",nature_study:"Nature Study",wildflower_viewing:"Wildflower Viewing",cross_country_skiing:"Cross Country Skiing",snowshoeing:"Snowshoeing"}},accessibility:{label:"Accessibility",icon:"♿",preset:!0,options:{wheelchair_accessible:"Wheelchair Accessible",stroller_friendly:"Stroller Friendly",uneven_terrain:"Uneven Terrain",mobility_challenges:"Limited Mobility"}},difficulty:{label:"Difficulty",icon:"⛰️",preset:!0,options:{easy:"Easy",moderate:"Moderate",difficult:"Difficult"}}},Ed={ecology:{label:"Ecology",icon:"🌿",options:{prairie:"Prairie",wetland:"Wetland",forest:"Forest",shoreline:"Shoreline",cedar_swamp:"Cedar Swamp",oak_savanna:"Oak Savanna",limestone_bluff:"Limestone Bluff"}},available_facilities:{label:"Facilities",icon:"🏢",options:{restrooms:"Restrooms",picnic_tables:"Picnic Tables",water_fountains:"Water Fountains",parking_available:"Parking Available"}},notable_features:{label:"Features",icon:"⭐",options:{waterfalls:"Waterfalls",overlooks:"Scenic Overlooks",historic_sites:"Historic Sites",rare_plants:"Rare Plants"}},photography:{label:"Photography",icon:"📸",options:{landscapes:"Landscapes",wildlife:"Wildlife",macro_flowers:"Macro/Flowers",sunrise_sunset:"Sunrise/Sunset"}}},zd={family_friendly:{label:"Family Friendly",icon:"👨‍👩‍👧‍👦",filters:{difficulty:["easy"],accessibility:["stroller_friendly"],available_facilities:["parking_available"]}},photography:{label:"Photography",icon:"📷",filters:{activity:["photography"],notable_features:["overlooks","waterfalls"],photography:["landscapes","wildlife"]}},accessible:{label:"Accessible",icon:"♿",filters:{accessibility:["wheelchair_accessible","stroller_friendly"],available_facilities:["parking_available"]}}};function v1({preserves:t=[],filters:e={},onFiltersChange:n}){var R;const[a,o]=$.useState(!1),[u,c]=$.useState(null),h=$.useMemo(()=>{const w={...mo,...Ed},j={};return Object.keys(w).forEach(g=>{j[g]={},Object.keys(w[g].options).forEach(p=>{var M;const y=t.filter(C=>{if(!(C!=null&&C.meta))return!1;const G=C.meta[`_preserve_filter_${g}`]||[];return(Array.isArray(G)?G:[G]).includes(p)}).length;j[g][p]={count:y,available:y>0,selected:((M=e[g])==null?void 0:M.includes(p))||!1}})}),j},[t,e]),_=(w,j,g)=>{if(!n)return;const p=e[w]||[];let y;g?y=[...p,j]:y=p.filter(M=>M!==j),n({...e,[w]:y}),c(null)},m=w=>{const j=zd[w];n(j.filters),c(w)},E=()=>{n({}),c(null)},S=Object.values(e).reduce((w,j)=>w+((j==null?void 0:j.length)||0),0),b=t.filter(w=>Object.entries(e).every(([j,g])=>{if(!g||g.length===0)return!0;const p=w.meta[`_preserve_filter_${j}`]||[],y=Array.isArray(p)?p:[p];return g.some(M=>y.includes(M))})).length,x=S>0&&b===0;return B.jsxs(B.Fragment,{children:[B.jsx("div",{className:"filter-presets",children:B.jsx("div",{className:"preset-chips",children:Object.entries(zd).map(([w,j])=>B.jsxs("button",{className:`preset-chip ${u===w?"active":""}`,onClick:()=>m(w),children:[B.jsx("span",{className:"preset-icon",children:j.icon}),B.jsx("span",{className:"preset-label",children:j.label})]},w))})}),B.jsxs("div",{className:"primary-filters",children:[B.jsxs("div",{className:"filter-chips-container",children:[Object.entries(mo).map(([w,j])=>{var y;const g=((y=e[w])==null?void 0:y.length)>0,p=Object.values(h[w]||{}).filter(M=>M.available).length;return B.jsxs("button",{className:`filter-chip ${g?"active":""} ${p===0?"disabled":""}`,onClick:()=>o(w),disabled:p===0,children:[B.jsx("span",{className:"chip-icon",children:j.icon}),B.jsx("span",{className:"chip-label",children:j.label}),g&&B.jsx("span",{className:"chip-count",children:e[w].length})]},w)}),B.jsxs("button",{className:"more-filters-chip",onClick:()=>o("more"),children:[B.jsx("span",{className:"chip-icon",children:"⚙️"}),B.jsx("span",{className:"chip-label",children:"More"})]})]}),B.jsx("div",{className:"results-summary",children:x?B.jsxs("div",{className:"empty-state",children:[B.jsx("span",{className:"empty-icon",children:"🤷‍♀️"}),B.jsx("span",{className:"empty-text",children:"No preserves match these filters"}),B.jsx("button",{className:"adjust-filters-btn",onClick:E,children:"Clear filters"})]}):B.jsx("div",{className:"results-count",children:S>0?B.jsxs(B.Fragment,{children:[B.jsxs("span",{className:"count-text",children:[b," of ",t.length," preserves"]}),S>0&&B.jsx("button",{className:"clear-btn",onClick:E,children:"Clear all"})]}):B.jsxs("span",{className:"count-text",children:[t.length," preserves"]})})})]}),a&&B.jsx("div",{className:"filter-modal-overlay",onClick:()=>o(!1),children:B.jsxs("div",{className:"filter-modal",onClick:w=>w.stopPropagation(),children:[B.jsxs("div",{className:"modal-header",children:[B.jsx("h3",{children:a==="more"?"More Filters":(R=mo[a])==null?void 0:R.label}),B.jsx("button",{className:"modal-close",onClick:()=>o(!1),children:"✕"})]}),B.jsx("div",{className:"modal-content",children:a==="more"?Object.entries(Ed).map(([w,j])=>B.jsx(Md,{filterType:w,filterDef:j,filterStats:h[w]||{},selectedValues:e[w]||[],onFilterChange:_},w)):B.jsx(Md,{filterType:a,filterDef:mo[a],filterStats:h[a]||{},selectedValues:e[a]||[],onFilterChange:_})}),B.jsx("div",{className:"modal-footer",children:B.jsx("button",{className:"apply-btn",onClick:()=>o(!1),children:"Apply Filters"})})]})}),B.jsx("style",{jsx:!0,children:`
+      `})]})}const mo={region:{label:"Region",icon:"📍",preset:!0,options:{northern_door:"Northern Door",central_door:"Central Door",southern_door:"Southern Door",washington_island:"Washington Island"}},activity:{label:"Activity",icon:"🥾",preset:!0,options:{hiking:"Hiking",birdwatching:"Birdwatching",photography:"Photography",nature_study:"Nature Study",wildflower_viewing:"Wildflower Viewing",cross_country_skiing:"Cross Country Skiing",snowshoeing:"Snowshoeing"}},accessibility:{label:"Accessibility",icon:"♿",preset:!0,options:{wheelchair_accessible:"Wheelchair Accessible",stroller_friendly:"Stroller Friendly",uneven_terrain:"Uneven Terrain",mobility_challenges:"Limited Mobility"}},difficulty:{label:"Difficulty",icon:"⛰️",preset:!0,options:{easy:"Easy",moderate:"Moderate",difficult:"Difficult"}}},Ed={ecology:{label:"Ecology",icon:"🌿",options:{prairie:"Prairie",wetland:"Wetland",forest:"Forest",shoreline:"Shoreline",cedar_swamp:"Cedar Swamp",oak_savanna:"Oak Savanna",limestone_bluff:"Limestone Bluff"}},available_facilities:{label:"Facilities",icon:"🏢",options:{restrooms:"Restrooms",picnic_tables:"Picnic Tables",water_fountains:"Water Fountains",parking_available:"Parking Available"}},notable_features:{label:"Features",icon:"⭐",options:{waterfalls:"Waterfalls",overlooks:"Scenic Overlooks",historic_sites:"Historic Sites",rare_plants:"Rare Plants"}},photography:{label:"Photography",icon:"📸",options:{landscapes:"Landscapes",wildlife:"Wildlife",macro_flowers:"Macro/Flowers",sunrise_sunset:"Sunrise/Sunset"}}},zd={family_friendly:{label:"Family Friendly",icon:"👨‍👩‍👧‍👦",filters:{difficulty:["easy"],accessibility:["stroller_friendly"],available_facilities:["parking_available"]}},photography:{label:"Photography",icon:"📷",filters:{activity:["photography"],notable_features:["overlooks","waterfalls"],photography:["landscapes","wildlife"]}},accessible:{label:"Accessible",icon:"♿",filters:{accessibility:["wheelchair_accessible","stroller_friendly"],available_facilities:["parking_available"]}}};function v1({preserves:t=[],filters:e={},onFiltersChange:n}){var R;const[a,o]=$.useState(!1),[u,c]=$.useState(null),h=$.useMemo(()=>{const w={...mo,...Ed},j={};return Object.keys(w).forEach(g=>{j[g]={},Object.keys(w[g].options).forEach(p=>{var M;const y=t.filter(C=>{if(!(C!=null&&C.meta))return!1;const G=C.meta[`_preserve_filter_${g}`]||[];return(Array.isArray(G)?G:[G]).includes(p)}).length;j[g][p]={count:y,available:y>0,selected:((M=e[g])==null?void 0:M.includes(p))||!1}})}),j},[t,e]),_=(w,j,g)=>{if(!n)return;const p=e[w]||[];let y;g?y=[...p,j]:y=p.filter(M=>M!==j),n({...e,[w]:y}),c(null)},m=w=>{const j=zd[w];n(j.filters),c(w)},E=()=>{n({}),c(null)},S=Object.values(e).reduce((w,j)=>w+((j==null?void 0:j.length)||0),0),b=t.filter(w=>Object.entries(e).every(([j,g])=>{if(!g||g.length===0)return!0;const p=w.meta[`_preserve_filter_${j}`]||[],y=Array.isArray(p)?p:[p];return g.some(M=>y.includes(M))})).length,x=S>0&&b===0;return B.jsxs(B.Fragment,{children:[B.jsx("div",{className:"filter-presets",children:B.jsx("div",{className:"preset-chips",children:Object.entries(zd).map(([w,j])=>B.jsxs("button",{className:`preset-chip ${u===w?"active":""}`,onClick:()=>m(w),children:[B.jsx("span",{className:"preset-icon",children:j.icon}),B.jsx("span",{className:"preset-label",children:j.label})]},w))})}),B.jsxs("div",{className:"primary-filters",children:[B.jsxs("div",{className:"filter-chips-container",children:[Object.entries(mo).map(([w,j])=>{var y;const g=((y=e[w])==null?void 0:y.length)>0,p=Object.values(h[w]||{}).filter(M=>M.available).length;return B.jsxs("button",{className:`filter-chip ${g?"active":""} ${p===0?"disabled":""}`,onClick:()=>o(w),disabled:p===0,children:[B.jsx("span",{className:"chip-icon",children:j.icon}),B.jsx("span",{className:"chip-label",children:j.label}),g&&B.jsx("span",{className:"chip-count",children:e[w].length})]},w)}),B.jsxs("button",{className:"more-filters-chip",onClick:()=>o("more"),children:[B.jsx("span",{className:"chip-icon",children:"⚙️"}),B.jsx("span",{className:"chip-label",children:"More"})]})]}),B.jsx("div",{className:"results-summary",children:x?B.jsxs("div",{className:"empty-state",children:[B.jsx("span",{className:"empty-icon",children:"🤷‍♀️"}),B.jsx("span",{className:"empty-text",children:"No preserves match these filters"}),B.jsx("button",{className:"adjust-filters-btn",onClick:E,children:"Clear filters"})]}):B.jsx("div",{className:"results-count",children:S>0?B.jsxs(B.Fragment,{children:[B.jsxs("span",{className:"count-text",children:[b," of ",t.length," preserves"]}),S>0&&B.jsx("button",{className:"clear-btn",onClick:E,children:"Clear all"})]}):B.jsxs("span",{className:"count-text",children:[t.length," preserves"]})})})]}),a&&B.jsx("div",{className:"filter-panel-overlay",children:B.jsxs("div",{className:"filter-panel",children:[B.jsxs("div",{className:"panel-header",children:[B.jsx("h3",{children:a==="more"?"More Filters":(R=mo[a])==null?void 0:R.label}),B.jsx("button",{className:"panel-close",onClick:()=>o(!1),children:"✕"})]}),B.jsx("div",{className:"panel-content",children:a==="more"?Object.entries(Ed).map(([w,j])=>B.jsx(Md,{filterType:w,filterDef:j,filterStats:h[w]||{},selectedValues:e[w]||[],onFilterChange:_},w)):B.jsx(Md,{filterType:a,filterDef:mo[a],filterStats:h[a]||{},selectedValues:e[a]||[],onFilterChange:_})})]})}),B.jsx("style",{jsx:!0,children:`
         .filter-presets {
           position: fixed;
           top: 80px;
@@ -245,51 +245,53 @@ Error generating stack: `+n.message+`
           cursor: pointer;
         }
 
-        .filter-modal-overlay {
+        .filter-panel-overlay {
           position: fixed;
           top: 0;
-          left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
+          width: 100%;
           z-index: 2000;
-          display: flex;
-          align-items: flex-end;
-          justify-content: center;
+          pointer-events: none;
         }
 
-        .filter-modal {
-          background: white;
+        .filter-panel {
+          position: absolute;
+          right: 0;
+          top: 0;
+          bottom: 0;
           width: 100%;
-          max-width: 500px;
-          max-height: 80vh;
-          border-radius: 20px 20px 0 0;
+          max-width: 380px;
+          background: white;
+          box-shadow: -4px 0 20px rgba(0,0,0,0.15);
           display: flex;
           flex-direction: column;
-          animation: slideUp 0.3s ease-out;
+          animation: slideLeft 0.3s ease-out;
+          pointer-events: auto;
         }
 
-        @keyframes slideUp {
-          from { transform: translateY(100%); }
-          to { transform: translateY(0); }
+        @keyframes slideLeft {
+          from { transform: translateX(100%); }
+          to { transform: translateX(0); }
         }
 
-        .modal-header {
+        .panel-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
           padding: 20px 24px 16px;
           border-bottom: 1px solid #e5e7eb;
+          background: white;
         }
 
-        .modal-header h3 {
+        .panel-header h3 {
           margin: 0;
           font-size: 18px;
           font-weight: 700;
           color: #1f2937;
         }
 
-        .modal-close {
+        .panel-close {
           background: none;
           border: none;
           font-size: 20px;
@@ -297,48 +299,38 @@ Error generating stack: `+n.message+`
           cursor: pointer;
           padding: 4px;
           border-radius: 50%;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        .modal-content {
+        .panel-close:hover {
+          background: #f3f4f6;
+          color: #374151;
+        }
+
+        .panel-content {
           flex: 1;
           overflow-y: auto;
           padding: 16px 24px;
         }
 
-        .modal-footer {
-          padding: 16px 24px;
-          border-top: 1px solid #e5e7eb;
-        }
-
-        .apply-btn {
-          width: 100%;
-          background: #3b82f6;
-          color: white;
-          border: none;
-          border-radius: 12px;
-          padding: 16px;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-        }
-
-        @media (min-width: 768px) {
-          .filter-modal-overlay {
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 20px;
+        @media (max-width: 768px) {
+          .filter-panel {
+            bottom: 0;
+            top: auto;
+            width: 100%;
+            max-width: none;
+            max-height: 70vh;
+            border-radius: 20px 20px 0 0;
+            animation: slideUp 0.3s ease-out;
           }
 
-          .filter-modal {
-            width: 400px;
-            max-height: 80vh;
-            border-radius: 12px;
-            animation: slideLeft 0.3s ease-out;
-          }
-
-          @keyframes slideLeft {
-            from { transform: translateX(100%); }
-            to { transform: translateX(0); }
+          @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
           }
         }
       `})]})}function Md({filterType:t,filterDef:e,filterStats:n,selectedValues:a,onFilterChange:o}){return B.jsxs("div",{className:"filter-section",children:[B.jsxs("h4",{className:"section-title",children:[B.jsx("span",{className:"section-icon",children:e.icon}),e.label]}),B.jsx("div",{className:"section-options",children:Object.entries(e.options).map(([u,c])=>{const h=n[u]||{count:0,available:!1},_=a.includes(u);return B.jsxs("label",{className:`option-label ${h.available?"":"unavailable"} ${_?"selected":""}`,children:[B.jsx("input",{type:"checkbox",checked:_,onChange:m=>o(t,u,m.target.checked),disabled:!h.available}),B.jsx("span",{className:"option-text",children:c}),B.jsxs("span",{className:"option-count",children:["(",h.count,")"]})]},u)})}),B.jsx("style",{jsx:!0,children:`
@@ -409,7 +401,7 @@ Error generating stack: `+n.message+`
             grid-template-columns: 1fr;
           }
         }
-      `})]})}function g1(){const[t,e]=$i.useState({}),[n,a]=$i.useState([]),[o,u]=$i.useState(!0);return $i.useEffect(()=>{u(!0),fetch(preserveExplorerData.apiUrl).then(c=>c.json()).then(c=>{console.log("✅ Preserves loaded in main app:",c),a(c),u(!1)}).catch(c=>{console.error("❌ Failed to fetch preserves in main app:",c),u(!1)})},[]),B.jsxs("div",{className:"preserve-explorer-app",children:[B.jsxs("div",{className:"preserve-explorer-header",children:[B.jsx("h1",{className:"text-2xl font-bold",children:"🚀 Preserve Explorer is mounted!"}),B.jsx("h2",{className:"text-4xl font-bold text-red-600",children:"Tailwind is Working"}),B.jsx("p",{className:"text-gray-700 mt-2",children:"Now let's add Leaflet and filters."})]}),B.jsx(v1,{preserves:n,filters:t,onFiltersChange:e}),B.jsx(p1,{preserves:n,filters:t}),B.jsx("style",{jsx:!0,children:`
+      `})]})}function g1(){const[t,e]=$i.useState({}),[n,a]=$i.useState([]),[o,u]=$i.useState(!0);return $i.useEffect(()=>{u(!0),fetch(preserveExplorerData.apiUrl).then(c=>c.json()).then(c=>{console.log("✅ Preserves loaded in main app:",c),a(c),u(!1)}).catch(c=>{console.error("❌ Failed to fetch preserves in main app:",c),u(!1)})},[]),B.jsxs("div",{className:"preserve-explorer-app",children:[B.jsx("div",{className:"preserve-explorer-header"}),B.jsx(v1,{preserves:n,filters:t,onFiltersChange:e}),B.jsx(p1,{preserves:n,filters:t}),B.jsx("style",{jsx:!0,children:`
         .preserve-explorer-app {
           position: relative;
           width: 100%;
