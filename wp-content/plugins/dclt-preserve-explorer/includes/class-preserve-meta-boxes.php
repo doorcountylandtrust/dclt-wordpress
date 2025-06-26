@@ -364,10 +364,13 @@ class DCLT_Preserve_Meta_Boxes {
             display: flex;
             align-items: center;
             gap: 8px;
+            background: #fff;  /* ADD THIS - White background */
+            border-radius: 4px; /* ADD THIS - Rounded corners */
         }
         
         .preserve-filter-group.has-selections legend {
             color: #135e96;
+            background: #f7fbff;
         }
         
         .filter-icon {
