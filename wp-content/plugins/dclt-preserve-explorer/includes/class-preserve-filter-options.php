@@ -22,19 +22,33 @@ class DCLT_Preserve_Filter_Options {
         add_action('init', array($this, 'init_default_options'));
     }
     
-    /**
-     * Add admin menu page
-     */
-    public function add_admin_menu() {
-        add_submenu_page(
-            'edit.php?post_type=preserve',
-            __('Filter Options', 'dclt-preserve-explorer'),
-            __('Filter Options', 'dclt-preserve-explorer'),
-            'manage_options',
-            'preserve-filter-options',
-            array($this, 'admin_page_callback')
-        );
+   /**
+ * Add admin menu page - UPDATED to prevent duplicates
+ * Replace this method in includes/class-preserve-filter-options.php around line 25
+ */
+public function add_admin_menu() {
+    // Check if submenu already exists to prevent duplicates
+    global $submenu;
+    $parent_slug = 'edit.php?post_type=preserve';
+    
+    if (isset($submenu[$parent_slug])) {
+        foreach ($submenu[$parent_slug] as $submenu_item) {
+            if ($submenu_item[2] === 'preserve-filter-options') {
+                // Menu already exists, don't add again
+                return;
+            }
+        }
     }
+    
+    add_submenu_page(
+        $parent_slug,
+        __('Filter Options', 'dclt-preserve-explorer'),
+        __('Filter Options', 'dclt-preserve-explorer'),
+        'manage_options',
+        'preserve-filter-options',
+        array($this, 'admin_page_callback')
+    );
+}
     
     /**
      * Initialize admin settings
