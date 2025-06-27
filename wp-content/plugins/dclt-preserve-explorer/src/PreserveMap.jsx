@@ -294,41 +294,23 @@ const handlePreserveSelect = (preserve) => {
                       {/* Action buttons */}
                       <div style={{ display: 'flex', gap: '6px', flexDirection: 'column' }}>
                         <button 
-                          onClick={() => handlePreserveSelect(preserve)}
-                          style={{
-                            width: '100%',
-                            padding: '8px 12px',
-                            backgroundColor: '#3b82f6',
-                            color: 'white',
-                            border: 'none',
-                            borderRadius: '6px',
-                            fontSize: '13px',
-                            fontWeight: '500',
-                            cursor: 'pointer'
-                          }}
-                        >
-                          📖 Learn More
-                        </button>
-                        
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          <a 
-                            href={getPreserveUrl(preserve)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{
-                              flex: 1,
-                              padding: '6px 8px',
-                              backgroundColor: '#10b981',
-                              color: 'white',
-                              textDecoration: 'none',
-                              borderRadius: '4px',
-                              fontSize: '11px',
-                              textAlign: 'center',
-                              fontWeight: '500'
-                            }}
-                          >
-                            🔗 Full Page
-                          </a>
+                        onClick={() => {
+                          window.location.href = getPreserveUrl(preserve);
+                        }}
+                        style={{
+                          width: '100%',
+                          padding: '8px 12px',
+                          backgroundColor: '#3b82f6',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '6px',
+                          fontSize: '13px',
+                          fontWeight: '500',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        📖 View Details
+                      </button>
                           
                           <button
                             onClick={() => {
@@ -351,7 +333,6 @@ const handlePreserveSelect = (preserve) => {
                           </button>
                         </div>
                       </div>
-                    </div>
                   </Popup>
                 </Marker>
               );
@@ -444,21 +425,7 @@ const handlePreserveSelect = (preserve) => {
               <p>This is a placeholder for the detailed preserve modal. You can implement the full modal component here or replace this with your PreserveDetailModal component.</p>
               
               <div style={{ marginTop: '16px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <a 
-                  href={getPreserveUrl(selectedPreserve)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: '#3b82f6',
-                    color: 'white',
-                    textDecoration: 'none',
-                    borderRadius: '6px',
-                    fontSize: '14px'
-                  }}
-                >
-                  🔗 View Full Page
-                </a>
+               
                 
                 <button
                   onClick={() => {
