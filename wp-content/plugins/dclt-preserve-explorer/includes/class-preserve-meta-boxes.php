@@ -17,7 +17,9 @@ class DCLT_Preserve_Meta_Boxes {
     
     public function __construct() {
         add_action('add_meta_boxes', array($this, 'add_meta_boxes'));
+        add_action('add_meta_boxes', array($this, 'add_photo_gallery_meta_box')); // ADD THIS LINE
         add_action('save_post', array($this, 'save_meta_boxes'));
+        add_action('save_post', array($this, 'save_photo_gallery_meta')); // ADD THIS LINE
         add_action('admin_enqueue_scripts', array($this, 'admin_scripts'));
         
         // Initialize filter options manager
@@ -526,6 +528,221 @@ class DCLT_Preserve_Meta_Boxes {
         });
         </script>
         <?php
+    }
+
+
+    /**
+     * Add Photo Gallery meta box
+     */
+    public function add_photo_gallery_meta_box() {
+        add_meta_box(
+            'preserve_photo_gallery',
+            __('Photo Gallery', 'dclt-preserve-explorer'),
+            array($this, 'photo_gallery_meta_box_callback'),
+            'preserve',
+            'normal',
+            'default'
+        );
+    }
+
+    /**
+     * Photo Gallery meta box callback
+     */
+    public function photo_gallery_meta_box_callback($post) {
+        wp_nonce_field('preserve_photo_gallery_nonce', 'preserve_photo_gallery_nonce');
+        
+        $gallery_images = get_post_meta($post->ID, '_preserve_gallery_images', true);
+        $gallery_images = $gallery_images ? $gallery_images : array();
+        
+        ?>
+        <div id="preserve-photo-gallery-container">
+            <div id="preserve-gallery-images" class="preserve-gallery-grid">
+                <?php if (!empty($gallery_images)): ?>
+                    <?php foreach ($gallery_images as $index => $image_id): ?>
+                        <?php $image = wp_get_attachment_image_src($image_id, 'medium'); ?>
+                        <?php if ($image): ?>
+                            <div class="gallery-image-item" data-image-id="<?php echo esc_attr($image_id); ?>">
+                                <img src="<?php echo esc_url($image[0]); ?>" alt="" style="width: 150px; height: 150px; object-fit: cover;" />
+                                <div class="gallery-image-controls">
+                                    <button type="button" class="button remove-gallery-image" data-image-id="<?php echo esc_attr($image_id); ?>">Remove</button>
+                                    <input type="text" name="gallery_captions[<?php echo esc_attr($image_id); ?>]" 
+                                           value="<?php echo esc_attr(get_post_meta($post->ID, "_preserve_gallery_caption_{$image_id}", true)); ?>" 
+                                           placeholder="Photo caption..." style="width: 100%; margin-top: 5px;" />
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+            
+            <div class="preserve-gallery-actions">
+                <button type="button" id="add-gallery-image" class="button button-secondary">
+                    📷 Add Photos
+                </button>
+                <p class="description">
+                    Add photos to showcase this preserve. Images will be displayed in a gallery on the preserve detail page.
+                </p>
+            </div>
+            
+            <!-- Hidden input to store gallery image IDs -->
+            <input type="hidden" id="preserve-gallery-ids" name="preserve_gallery_images" 
+                   value="<?php echo esc_attr(implode(',', $gallery_images)); ?>" />
+        </div>
+        
+        <style>
+        .preserve-gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #f9f9f9;
+            min-height: 80px;
+        }
+        
+        .gallery-image-item {
+            position: relative;
+            text-align: center;
+        }
+        
+        .gallery-image-controls {
+            margin-top: 8px;
+        }
+        
+        .preserve-gallery-actions {
+            margin-top: 15px;
+        }
+        
+        #add-gallery-image {
+            font-size: 14px;
+            padding: 8px 16px;
+        }
+        </style>
+        
+        <script>
+        jQuery(document).ready(function($) {
+            var galleryFrame;
+            var galleryIds = [];
+            
+            // Initialize gallery IDs from hidden input
+            var existingIds = $('#preserve-gallery-ids').val();
+            if (existingIds) {
+                galleryIds = existingIds.split(',').filter(id => id.trim() !== '');
+            }
+            
+            // Add gallery image button
+            $('#add-gallery-image').on('click', function(e) {
+                e.preventDefault();
+                
+                // Create media frame if it doesn't exist
+                if (galleryFrame) {
+                    galleryFrame.open();
+                    return;
+                }
+                
+                galleryFrame = wp.media({
+                    title: 'Select Photos for Gallery',
+                    button: {
+                        text: 'Add to Gallery'
+                    },
+                    multiple: true,
+                    library: {
+                        type: 'image'
+                    }
+                });
+                
+                // When images are selected
+                galleryFrame.on('select', function() {
+                    var selection = galleryFrame.state().get('selection');
+                    var $container = $('#preserve-gallery-images');
+                    
+                    selection.map(function(attachment) {
+                        attachment = attachment.toJSON();
+                        
+                        // Check if image is already in gallery
+                        if (galleryIds.indexOf(attachment.id.toString()) === -1) {
+                            galleryIds.push(attachment.id.toString());
+                            
+                            // Add image to grid
+                            var imageHtml = '<div class="gallery-image-item" data-image-id="' + attachment.id + '">' +
+                                '<img src="' + attachment.sizes.medium.url + '" alt="" style="width: 150px; height: 150px; object-fit: cover;" />' +
+                                '<div class="gallery-image-controls">' +
+                                    '<button type="button" class="button remove-gallery-image" data-image-id="' + attachment.id + '">Remove</button>' +
+                                    '<input type="text" name="gallery_captions[' + attachment.id + ']" value="" placeholder="Photo caption..." style="width: 100%; margin-top: 5px;" />' +
+                                '</div>' +
+                            '</div>';
+                            
+                            $container.append(imageHtml);
+                        }
+                    });
+                    
+                    // Update hidden input
+                    $('#preserve-gallery-ids').val(galleryIds.join(','));
+                });
+                
+                galleryFrame.open();
+            });
+            
+            // Remove image from gallery
+            $(document).on('click', '.remove-gallery-image', function(e) {
+                e.preventDefault();
+                var imageId = $(this).data('image-id').toString();
+                var $item = $(this).closest('.gallery-image-item');
+                
+                // Remove from array
+                galleryIds = galleryIds.filter(id => id !== imageId);
+                
+                // Remove from DOM
+                $item.remove();
+                
+                // Update hidden input
+                $('#preserve-gallery-ids').val(galleryIds.join(','));
+            });
+        });
+        </script>
+        <?php
+    }
+
+    /**
+     * Save Photo Gallery meta data
+     */
+    public function save_photo_gallery_meta($post_id) {
+        // Verify nonce
+        if (!isset($_POST['preserve_photo_gallery_nonce']) || 
+            !wp_verify_nonce($_POST['preserve_photo_gallery_nonce'], 'preserve_photo_gallery_nonce')) {
+            return;
+        }
+        
+        // Check permissions
+        if (!current_user_can('edit_post', $post_id)) {
+            return;
+        }
+        
+        // Save gallery image IDs
+        if (isset($_POST['preserve_gallery_images'])) {
+            $gallery_images = sanitize_text_field($_POST['preserve_gallery_images']);
+            $gallery_ids = array_filter(explode(',', $gallery_images));
+            $gallery_ids = array_map('intval', $gallery_ids); // Ensure integers
+            update_post_meta($post_id, '_preserve_gallery_images', $gallery_ids);
+        } else {
+            delete_post_meta($post_id, '_preserve_gallery_images');
+        }
+        
+        // Save gallery captions
+        if (isset($_POST['gallery_captions']) && is_array($_POST['gallery_captions'])) {
+            foreach ($_POST['gallery_captions'] as $image_id => $caption) {
+                $image_id = intval($image_id);
+                $caption = sanitize_text_field($caption);
+                
+                if (!empty($caption)) {
+                    update_post_meta($post_id, "_preserve_gallery_caption_{$image_id}", $caption);
+                } else {
+                    delete_post_meta($post_id, "_preserve_gallery_caption_{$image_id}");
+                }
+            }
+        }
     }
     
     /**

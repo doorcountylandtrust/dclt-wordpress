@@ -38,6 +38,30 @@ $lng = $preserve_data ? get_post_meta($preserve_data->ID, '_preserve_lng', true)
 $difficulty = $preserve_data ? get_post_meta($preserve_data->ID, '_preserve_filter_difficulty', true) : '';
 $region = $preserve_data ? get_post_meta($preserve_data->ID, '_preserve_filter_region', true) : '';
 
+$gallery_images = $preserve_data ? get_post_meta($preserve_data->ID, '_preserve_gallery_images', true) : array();
+$gallery_data = array();
+
+if (!empty($gallery_images) && is_array($gallery_images)) {
+    foreach ($gallery_images as $image_id) {
+        $image_data = wp_get_attachment_image_src($image_id, 'large');
+        $image_thumb = wp_get_attachment_image_src($image_id, 'medium');
+        $caption = get_post_meta($preserve_data->ID, "_preserve_gallery_caption_{$image_id}", true);
+        
+        if ($image_data) {
+            $gallery_data[] = array(
+                'id' => (int) $image_id,
+                'url' => $image_data[0],
+                'thumbnail' => $image_thumb ? $image_thumb[0] : $image_data[0],
+                'width' => (int) $image_data[1],
+                'height' => (int) $image_data[2],
+                'alt' => get_post_meta($image_id, '_wp_attachment_image_alt', true) ?: '',
+                'caption' => $caption ?: '',
+                'title' => get_the_title($image_id) ?: ''
+            );
+        }
+    }
+}
+
 $all_filters = array();
 if ($is_preserve_page && $preserve_data) {
     try {
@@ -396,7 +420,8 @@ window.preservePageData = {
             _preserve_lat: '<?php echo esc_js($lat); ?>',
             _preserve_lng: '<?php echo esc_js($lng); ?>',
             _preserve_filter_difficulty: <?php echo json_encode($difficulty ?: []); ?>,
-            _preserve_filter_region: <?php echo json_encode($region ?: []); ?>
+            _preserve_filter_region: <?php echo json_encode($region ?: []); ?>,
+            _preserve_gallery: <?php echo json_encode($gallery_data); ?>
         }
     }
     <?php endif; ?>

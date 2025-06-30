@@ -86,6 +86,28 @@ class DCLT_Preserve_REST_API {
                 'sanitize_callback' => [$this, 'sanitize_filter_array'],
             ]);
         }
+
+        // Register photo gallery field using REST field (not post meta)
+        register_rest_field('preserve', '_preserve_gallery', [
+            'get_callback' => [$this, 'get_gallery_data'],
+            'update_callback' => null,
+            'schema' => [
+                'type' => 'array',
+                'items' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'id' => ['type' => 'integer'],
+                        'url' => ['type' => 'string'],
+                        'thumbnail' => ['type' => 'string'],
+                        'width' => ['type' => 'integer'],
+                        'height' => ['type' => 'integer'],
+                        'alt' => ['type' => 'string'],
+                        'caption' => ['type' => 'string'],
+                        'title' => ['type' => 'string']
+                    ]
+                ]
+            ]
+        ]);
     }
 
     /**
@@ -101,4 +123,50 @@ class DCLT_Preserve_REST_API {
         
         return array_map('sanitize_key', array_filter($value));
     }
+
+    /**
+     * Get gallery data for REST API
+     * 
+     * @param array $object The object from the response
+     * @param string $field_name Name of field
+     * @param WP_REST_Request $request Current request
+     * @return array Gallery data
+     */
+    public function get_gallery_data($object, $field_name, $request) {
+    $preserve_id = $object['id'];
+    $gallery_images = get_post_meta($preserve_id, '_preserve_gallery_images', true);
+    
+    // Debug what's actually saved in WordPress
+    if ($preserve_id == 8) { // Bear Creek
+        error_log("DEBUG Bear Creek gallery images: " . print_r($gallery_images, true));
+    }
+    
+    // Return real data if available, otherwise test data
+    if (!empty($gallery_images) && is_array($gallery_images)) {
+        // Process real photos...
+        $gallery_data = array();
+        foreach ($gallery_images as $image_id) {
+            $image_data = wp_get_attachment_image_src($image_id, 'large');
+            $image_thumb = wp_get_attachment_image_src($image_id, 'medium');
+            $caption = get_post_meta($preserve_id, "_preserve_gallery_caption_{$image_id}", true);
+            
+            if ($image_data) {
+                $gallery_data[] = array(
+                    'id' => (int) $image_id,
+                    'url' => $image_data[0],
+                    'thumbnail' => $image_thumb ? $image_thumb[0] : $image_data[0],
+                    'width' => (int) $image_data[1],
+                    'height' => (int) $image_data[2],
+                    'alt' => get_post_meta($image_id, '_wp_attachment_image_alt', true) ?: '',
+                    'caption' => $caption ?: '',
+                    'title' => get_the_title($image_id) ?: ''
+                );
+            }
+        }
+        return $gallery_data;
+    }
+    
+   
+}
+
 }
