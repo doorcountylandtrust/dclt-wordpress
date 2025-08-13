@@ -1,33 +1,8 @@
-@source "./**/*.php";
-@source "./**/*.js";
-@source "./components/*.css";
+@import "../../components/buttons.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import "../../components/buttons.css";
-@import "../../components/forms.css";
-@import "../../components/layout.css";
-@import "../../components/typography.css";
 
 
-@layer base {
-  body.admin-bar .preserve-focused-layout {
-    padding-top: 32px;
-  }
-  
-  body.admin-bar .preserve-focused-content {
-    height: calc(100vh - 92px); /* 60px header + 32px admin bar */
-  }
-  
-  @media screen and (max-width: 782px) {
-    body.admin-bar .preserve-focused-layout {
-      padding-top: 46px;
-    }
-    
-    body.admin-bar .preserve-focused-content {
-      height: calc(100vh - 106px); /* 60px header + 46px mobile admin bar */
-    }
-  }
-}

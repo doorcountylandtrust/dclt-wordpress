@@ -1,13 +1,17 @@
+/* Debug: Force a visible test */
+.debug-buttons-loaded {
+  background: red !important;
+  color: white !important;
+}
+
+
+
 @layer components {
   .btn-primary {
-    @apply bg-green-700 text-white font-bold py-2 px-4 rounded;
+    @apply bg-brand text-white px-4 py-2 rounded-md font-medium;
+    @apply hover:bg-brand/90 active:bg-brand/80;
+    @apply transition-colors duration-200;
+    @apply cursor-pointer border-0;
   }
-
-  .btn-primary:hover {
-    @apply bg-green-800;
-  }
-
-  .btn-test {
-    @apply bg-blue-600 text-white px-4 py-2 rounded;
-  }
+ 
 }

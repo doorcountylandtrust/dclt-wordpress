@@ -29,6 +29,7 @@ require_once DCLT_PRESERVE_PLUGIN_DIR . 'includes/class-preserve-post-type.php';
 require_once DCLT_PRESERVE_PLUGIN_DIR . 'includes/class-preserve-filter-options.php';
 require_once DCLT_PRESERVE_PLUGIN_DIR . 'includes/class-preserve-rest-api.php';
 require_once DCLT_PRESERVE_PLUGIN_DIR . 'includes/class-preserve-meta-boxes.php';
+require_once DCLT_PRESERVE_PLUGIN_DIR . 'includes/class-dclt-analytics.php';
 
 // SEO Router Class
 class DCLT_Preserve_SEO_Router {
@@ -247,9 +248,10 @@ if (!function_exists('dclt_enqueue_preserve_explorer_assets')) {
         
         // Localize REST API data
         wp_localize_script('dclt-preserve-explorer', 'preserveExplorerData', array(
+            'analyticsNonce' => wp_create_nonce('dclt_analytics_nonce'),
             'apiUrl' => $api_url,
             'filterOptionsUrl' => $filter_options_url,
-            'nonce' => wp_create_nonce('wp_rest'),
+            'restNonce' => wp_create_nonce('wp_rest'),
             'debug' => WP_DEBUG,
         ));
     }

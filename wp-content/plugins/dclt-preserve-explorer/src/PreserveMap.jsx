@@ -223,31 +223,24 @@ export default function PreserveMap({
           <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.5rem 0' }}>
             <button 
               onClick={() => setViewMode('map')} 
-              style={{ 
-                marginRight: '0.5rem', 
-                padding: '0.5rem 1rem', 
-                background: viewMode === 'map' ? '#3b82f6' : '#e5e7eb', 
-                color: viewMode === 'map' ? 'white' : '#111827', 
-                borderRadius: '6px', 
-                border: 'none', 
-                cursor: 'pointer' 
-              }}
+              className={`mr-2 px-4 py-2 rounded-md border-0 cursor-pointer transition-colors ${
+                viewMode === 'map' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+              }`}
             >
               🗺 Map View
             </button>
             <button 
-              onClick={() => setViewMode('list')} 
-              style={{ 
-                padding: '0.5rem 1rem', 
-                background: viewMode === 'list' ? '#3b82f6' : '#e5e7eb', 
-                color: viewMode === 'list' ? 'white' : '#111827', 
-                borderRadius: '6px', 
-                border: 'none', 
-                cursor: 'pointer' 
-              }}
-            >
-              📋 List View
-            </button>
+  onClick={() => setViewMode('list')} 
+  className={`px-4 py-2 rounded-md border-0 cursor-pointer transition-colors ${
+    viewMode === 'list' 
+      ? 'bg-blue-600 text-white' 
+      : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
+  }`}
+>
+  📋 List View
+</button>
           </div>
 
           {/* Discovery Mode Content */}
@@ -515,6 +508,7 @@ export default function PreserveMap({
       {/* Hero Section */}
       <div className="preserve-hero-section">
         <h1 style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937', margin: '0 0 8px 0' }}>
+        
           {selectedPreserve.title.rendered}
         </h1>
       </div>

@@ -1,34 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
-
-// Filter presets - these can remain hardcoded as they're UI presets
-const FILTER_PRESETS = {
-  family_friendly: {
-    label: 'Family Friendly',
-    icon: '👨‍👩‍👧‍👦',
-    filters: {
-      difficulty: ['easy'],
-      accessibility: ['stroller_friendly']
-    }
-  },
-  photography: {
-    label: 'Photography',
-    icon: '📷',
-    filters: {
-      activity: ['photography']
-    }
-  },
-  accessible: {
-    label: 'Accessible',
-    icon: '♿',
-    filters: {
-      accessibility: ['wheelchair_accessible', 'stroller_friendly']
-    }
-  }
-};
+import { trackEvent } from './utils/analytics';
 
 export default function PreserveFilters({ preserves = [], filters = {}, onFiltersChange }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedPreset, setSelectedPreset] = useState(null);
   const [filterOptions, setFilterOptions] = useState({ primary: {}, secondary: {} });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -131,6 +105,13 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
   const handleFilterChange = (filterType, optionKey, checked) => {
     if (!onFiltersChange) return;
     
+    // Analytics tracking
+    trackEvent('Filter Used', {
+      type: filterType,
+      value: optionKey,
+      action: checked ? 'add' : 'remove'
+    });
+    
     const currentFilters = filters[filterType] || [];
     let newFilters;
     
@@ -144,21 +125,12 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
       ...filters,
       [filterType]: newFilters
     });
-    
-    setSelectedPreset(null); // Clear preset when manual filtering
-  };
-
-  // Apply preset filters
-  const applyPreset = (presetKey) => {
-    const preset = FILTER_PRESETS[presetKey];
-    onFiltersChange(preset.filters);
-    setSelectedPreset(presetKey);
   };
 
   // Clear all filters
   const clearAllFilters = () => {
+    trackEvent('Filters Cleared', { total_filters: Object.values(filters).reduce((sum, filterArray) => sum + (filterArray?.length || 0), 0) });
     onFiltersChange({});
-    setSelectedPreset(null);
   };
 
   // Count active filters
@@ -282,55 +254,68 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
 
   return (
     <>
-      {/* Filter Presets Row */}
-      <div className="filter-presets">
-        <div className="preset-chips">
-          {Object.entries(FILTER_PRESETS).map(([presetKey, preset]) => (
-            <button
-              key={presetKey}
-              className={`preset-chip ${selectedPreset === presetKey ? 'active' : ''}`}
-              onClick={() => applyPreset(presetKey)}
-            >
-              <span className="preset-icon">{preset.icon}</span>
-              <span className="preset-label">{preset.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
 
-      {/* Primary Filter Chips */}
+   
+      {/* Streamlined Primary Filter Chips - Only 3 Most Important */}
       <div className="primary-filters">
         <div className="filter-chips-container">
-          {Object.entries(filterOptions.primary).map(([filterType, filterDef]) => {
-            const hasSelections = filters[filterType]?.length > 0;
-            const availableCount = Object.values(filterStats[filterType] || {})
-              .filter(stat => stat.available).length;
-            
-            return (
-              <button
-                key={filterType}
-                className={`filter-chip ${hasSelections ? 'active' : ''} ${availableCount === 0 ? 'disabled' : ''}`}
-                onClick={() => setIsModalOpen(filterType)}
-                disabled={availableCount === 0}
-              >
-                <span className="chip-icon">{filterDef.icon || '🔧'}</span>
-                <span className="chip-label">{filterDef.label || filterType}</span>
-                {hasSelections && (
-                  <span className="chip-count">{filters[filterType].length}</span>
-                )}
-              </button>
-            );
-          })}
-          
-          {Object.keys(filterOptions.secondary).length > 0 && (
+          {/* Accessibility - Most Important for DEI */}
+          {(filterOptions.primary.accessibility || filterOptions.secondary.accessibility) && (
             <button
-              className="more-filters-chip"
-              onClick={() => setIsModalOpen('more')}
+              className={`filter-chip ${filters.accessibility?.length > 0 ? 'active' : ''}`}
+              onClick={() => {
+                trackEvent('Filter Button Clicked', { button: 'accessibility' });
+                setIsModalOpen('accessibility');
+              }}
             >
-              <span className="chip-icon">⚙️</span>
-              <span className="chip-label">More</span>
+              <span className="chip-icon">♿</span>
+              <span className="chip-label">Accessible</span>
+              {filters.accessibility?.length > 0 && (
+                <span className="chip-count">{filters.accessibility.length}</span>
+              )}
             </button>
           )}
+          
+          {/* Activities/Features - What can I do here? */}
+          {(filterOptions.primary.activity || filterOptions.secondary.activity) && (
+            <button
+              className={`filter-chip ${filters.activity?.length > 0 ? 'active' : ''}`}
+              onClick={() => {
+                trackEvent('Filter Button Clicked', { button: 'activity' });
+                setIsModalOpen('activity');
+              }}
+            >
+              <span className="chip-icon">🏃‍♀️</span>
+              <span className="chip-label">Activities</span>
+              {filters.activity?.length > 0 && (
+                <span className="chip-count">{filters.activity.length}</span>
+              )}
+            </button>
+          )}
+          
+          {/* More Filters - Everything else */}
+          <button
+            className={`more-filters-chip ${
+              Object.entries(filters).some(([key, values]) => 
+                !['accessibility', 'activity'].includes(key) && values?.length > 0
+              ) ? 'active' : ''
+            }`}
+            onClick={() => {
+              trackEvent('Filter Button Clicked', { button: 'more' });
+              setIsModalOpen('more');
+            }}
+          >
+            <span className="chip-icon">⚙️</span>
+            <span className="chip-label">More</span>
+            {(() => {
+              const moreFiltersCount = Object.entries(filters)
+                .filter(([key, values]) => !['accessibility', 'activity'].includes(key) && values?.length > 0)
+                .reduce((sum, [, values]) => sum + values.length, 0);
+              return moreFiltersCount > 0 && (
+                <span className="chip-count">{moreFiltersCount}</span>
+              );
+            })()}
+          </button>
         </div>
 
         {/* Results Summary */}
@@ -347,30 +332,33 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
             <div className="results-count">
               {totalActiveFilters > 0 ? (
                 <>
-                  <span className="count-text">{filteredCount} of {preserves.length} preserves</span>
-                  {totalActiveFilters > 0 && (
-                    <button className="clear-btn" onClick={clearAllFilters}>
-                      Clear all
-                    </button>
-                  )}
+                  <span className="count-text">
+                    <strong>{filteredCount}</strong> of {preserves.length} preserves
+                  </span>
+                  <button className="clear-btn" onClick={clearAllFilters}>
+                    Clear all
+                  </button>
                 </>
               ) : (
-                <span className="count-text">{preserves.length} preserves</span>
+                <span className="count-text">
+                  <strong>{preserves.length}</strong> preserves to explore
+                </span>
               )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Detailed Filter Panel */}
+      {/* Enhanced Filter Panel */}
       {isModalOpen && (
-        <div className="filter-panel-overlay">
-          <div className="filter-panel">
+        <div className="filter-panel-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="filter-panel" onClick={(e) => e.stopPropagation()}>
             <div className="panel-header">
               <h3>
-                {isModalOpen === 'more' 
-                  ? 'More Filters' 
-                  : (filterOptions.primary[isModalOpen]?.label || filterOptions.secondary[isModalOpen]?.label || isModalOpen)
+                {isModalOpen === 'more' ? 'More Filters' : 
+                 isModalOpen === 'accessibility' ? '♿ Accessibility Options' :
+                 isModalOpen === 'activity' ? '🏃‍♀️ Activities & Features' :
+                 (filterOptions.primary[isModalOpen]?.label || filterOptions.secondary[isModalOpen]?.label || isModalOpen)
                 }
               </h3>
               <button 
@@ -383,19 +371,27 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
 
             <div className="panel-content">
               {isModalOpen === 'more' ? (
-                // Show all secondary filters
-                Object.entries(filterOptions.secondary).map(([filterType, filterDef]) => (
-                  <FilterSection
-                    key={filterType}
-                    filterType={filterType}
-                    filterDef={filterDef}
-                    filterStats={filterStats[filterType] || {}}
-                    selectedValues={filters[filterType] || []}
-                    onFilterChange={handleFilterChange}
-                  />
-                ))
+                // Show all filters except accessibility and activity
+                <>
+                  <div className="more-filters-intro">
+                    <p>Additional filters to help you find the perfect preserve:</p>
+                  </div>
+                  {Object.entries({...filterOptions.primary, ...filterOptions.secondary})
+                    .filter(([key]) => !['accessibility', 'activity'].includes(key))
+                    .map(([filterType, filterDef]) => (
+                      <FilterSection
+                        key={filterType}
+                        filterType={filterType}
+                        filterDef={filterDef}
+                        filterStats={filterStats[filterType] || {}}
+                        selectedValues={filters[filterType] || []}
+                        onFilterChange={handleFilterChange}
+                      />
+                    ))
+                  }
+                </>
               ) : (
-                // Show specific filter (primary or secondary)
+                // Show specific filter
                 <FilterSection
                   filterType={isModalOpen}
                   filterDef={allFilters[isModalOpen]}
@@ -410,52 +406,6 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
       )}
 
       <style jsx>{`
-        .filter-presets {
-          position: fixed;
-          top: 80px;
-          left: 20px;
-          right: 20px;
-          z-index: 800;
-          pointer-events: none;
-        }
-
-        .preset-chips {
-          display: flex;
-          gap: 8px;
-          overflow-x: auto;
-          padding: 8px 0;
-          pointer-events: auto;
-        }
-
-        .preset-chip {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          background: white;
-          border: 1px solid #e5e7eb;
-          border-radius: 20px;
-          padding: 8px 12px;
-          font-size: 13px;
-          font-weight: 500;
-          color: #374151;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          white-space: nowrap;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .preset-chip:hover {
-          border-color: #3b82f6;
-          transform: translateY(-1px);
-          box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-        }
-
-        .preset-chip.active {
-          background: #3b82f6;
-          border-color: #2563eb;
-          color: white;
-        }
-
         .primary-filters {
           position: fixed;
           bottom: 20px;
@@ -467,8 +417,8 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
 
         .filter-chips-container {
           display: flex;
-          gap: 8px;
-          overflow-x: auto;
+          justify-content: center;
+          gap: 12px;
           padding: 8px 0;
           pointer-events: auto;
         }
@@ -476,61 +426,61 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
         .filter-chip, .more-filters-chip {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 8px;
           background: white;
-          border: 1px solid #e5e7eb;
-          border-radius: 20px;
-          padding: 10px 14px;
-          font-size: 14px;
-          font-weight: 500;
+          border: 2px solid #e5e7eb;
+          border-radius: 25px;
+          padding: 12px 18px;
+          font-size: 15px;
+          font-weight: 600;
           color: #374151;
           cursor: pointer;
           transition: all 0.2s ease;
           white-space: nowrap;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+          min-width: 100px;
+          justify-content: center;
         }
 
-        .filter-chip:hover:not(.disabled), .more-filters-chip:hover {
+        .filter-chip:hover, .more-filters-chip:hover {
           border-color: #3b82f6;
           transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+          box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
         }
 
-        .filter-chip.active {
+        .filter-chip.active, .more-filters-chip.active {
           background: #3b82f6;
           border-color: #2563eb;
           color: white;
-        }
-
-        .filter-chip.disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
+          transform: translateY(-1px);
         }
 
         .chip-icon {
-          font-size: 16px;
+          font-size: 18px;
+        }
+
+        .chip-label {
+          font-weight: 600;
         }
 
         .chip-count {
           background: rgba(255,255,255,0.3);
-          border-radius: 10px;
-          padding: 2px 6px;
-          font-size: 11px;
-          font-weight: 600;
-          margin-left: 2px;
+          border-radius: 12px;
+          padding: 2px 8px;
+          font-size: 12px;
+          font-weight: 700;
+          margin-left: 4px;
+          min-width: 20px;
+          text-align: center;
         }
 
-        .filter-chip.active .chip-count {
+        .filter-chip.active .chip-count, .more-filters-chip.active .chip-count {
           background: rgba(255,255,255,0.3);
-        }
-
-        .more-filters-chip {
-          background: #f3f4f6;
-          border-color: #d1d5db;
+          color: white;
         }
 
         .results-summary {
-          margin-top: 12px;
+          margin-top: 16px;
           text-align: center;
           pointer-events: auto;
         }
@@ -542,26 +492,32 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
           gap: 12px;
           background: rgba(255,255,255,0.95);
           backdrop-filter: blur(10px);
-          border-radius: 12px;
-          padding: 8px 16px;
-          font-size: 13px;
+          border-radius: 16px;
+          padding: 10px 20px;
+          font-size: 14px;
           color: #374151;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .count-text strong {
+          color: #1f2937;
         }
 
         .clear-btn {
-          background: none;
+          background: #ef4444;
+          color: white;
           border: none;
-          color: #3b82f6;
+          border-radius: 8px;
+          padding: 4px 12px;
           font-size: 12px;
           font-weight: 600;
           cursor: pointer;
-          padding: 2px 6px;
-          border-radius: 4px;
+          transition: background 0.2s ease;
         }
 
         .clear-btn:hover {
-          background: rgba(59, 130, 246, 0.1);
+          background: #dc2626;
         }
 
         .empty-state {
@@ -596,14 +552,53 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
           cursor: pointer;
         }
 
+        .more-filters-intro {
+          margin-bottom: 20px;
+          padding: 16px;
+          background: #f8fafc;
+          border-radius: 12px;
+          border: 1px solid #e2e8f0;
+        }
+
+        .more-filters-intro p {
+          margin: 0;
+          color: #64748b;
+          font-size: 14px;
+          text-align: center;
+          font-style: italic;
+        }
+
+        /* Mobile optimizations */
+        @media (max-width: 480px) {
+          .filter-chips-container {
+            gap: 8px;
+            overflow-x: auto;
+            padding: 8px 4px;
+            justify-content: flex-start;
+          }
+          
+          .filter-chip, .more-filters-chip {
+            padding: 10px 14px;
+            font-size: 14px;
+            min-width: 90px;
+            flex-shrink: 0;
+          }
+          
+          .chip-icon {
+            font-size: 16px;
+          }
+        }
+
+        /* Enhanced panel styles */
         .filter-panel-overlay {
           position: fixed;
           top: 0;
+          left: 0;
           right: 0;
           bottom: 0;
-          width: 100%;
+          background: rgba(0, 0, 0, 0.5);
           z-index: 2000;
-          pointer-events: none;
+          pointer-events: auto;
         }
 
         .filter-panel {
@@ -612,13 +607,12 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
           top: 0;
           bottom: 0;
           width: 100%;
-          max-width: 380px;
+          max-width: 400px;
           background: white;
           box-shadow: -4px 0 20px rgba(0,0,0,0.15);
           display: flex;
           flex-direction: column;
           animation: slideLeft 0.3s ease-out;
-          pointer-events: auto;
         }
 
         @keyframes slideLeft {
@@ -630,42 +624,44 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 20px 24px 16px;
-          border-bottom: 1px solid #e5e7eb;
-          background: white;
+          padding: 24px 24px 20px;
+          border-bottom: 2px solid #f1f5f9;
+          background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
         }
 
         .panel-header h3 {
           margin: 0;
-          font-size: 18px;
+          font-size: 20px;
           font-weight: 700;
           color: #1f2937;
         }
 
         .panel-close {
-          background: none;
+          background: #f3f4f6;
           border: none;
-          font-size: 20px;
+          font-size: 18px;
           color: #6b7280;
           cursor: pointer;
-          padding: 4px;
+          padding: 8px;
           border-radius: 50%;
-          width: 32px;
-          height: 32px;
+          width: 36px;
+          height: 36px;
           display: flex;
           align-items: center;
           justify-content: center;
+          transition: all 0.2s ease;
         }
 
         .panel-close:hover {
-          background: #f3f4f6;
+          background: #e5e7eb;
           color: #374151;
+          transform: scale(1.05);
         }
 
         .panel-content {
           flex: 1;
           overflow-y: auto;
-          padding: 16px 24px;
+          padding: 20px 24px;
         }
 
         @media (max-width: 768px) {
@@ -674,7 +670,7 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
             top: auto;
             width: 100%;
             max-width: none;
-            max-height: 70vh;
+            max-height: 75vh;
             border-radius: 20px 20px 0 0;
             animation: slideUp 0.3s ease-out;
           }
@@ -682,6 +678,14 @@ export default function PreserveFilters({ preserves = [], filters = {}, onFilter
           @keyframes slideUp {
             from { transform: translateY(100%); }
             to { transform: translateY(0); }
+          }
+          
+          .panel-header {
+            padding: 20px 20px 16px;
+          }
+          
+          .panel-content {
+            padding: 16px 20px 24px;
           }
         }
       `}</style>

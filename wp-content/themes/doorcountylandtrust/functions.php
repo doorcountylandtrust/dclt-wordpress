@@ -32,3 +32,6 @@ add_filter('wp_check_filetype_and_ext', 'dclt_check_json_filetype', 10, 4);
 add_action('init', function () {
     add_theme_support('page-templates');
 });
+
+
+require_once get_template_directory() . '/inc/blocks/blocks-init.php';
