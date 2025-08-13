@@ -1,0 +1,66 @@
+/* 
+ * Hero Block CSS
+ * File: blocks/hero/hero.css
+ */
+
+.dclt-hero-block {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+}
+
+@media (max-width: 768px) {
+    .dclt-hero-block {
+        min-height: 50vh;
+    }
+    
+    .dclt-hero-block .hero-content {
+        text-align: center !important;
+        max-width: none !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+}
+
+.dclt-hero-block video {
+    object-position: center center;
+}
+
+.dclt-hero-block .curve-fill {
+    transition: fill 0.3s ease;
+}
+
+/* Animation for text content */
+.dclt-hero-block .hero-content > * {
+    animation: heroContentSlideUp 0.8s ease-out forwards;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.dclt-hero-block .hero-content h1 {
+    animation-delay: 0.2s;
+}
+
+.dclt-hero-block .hero-content p {
+    animation-delay: 0.4s;
+}
+
+.dclt-hero-block .hero-content .flex {
+    animation-delay: 0.6s;
+}
+
+@keyframes heroContentSlideUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Respect reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .dclt-hero-block .hero-content > * {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+}
