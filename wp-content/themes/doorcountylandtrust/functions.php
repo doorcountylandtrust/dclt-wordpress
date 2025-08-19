@@ -33,5 +33,5 @@ add_action('init', function () {
     add_theme_support('page-templates');
 });
 
-require_once get_template_directory() . '/inc/blocks/helpers.php';
+
 require_once get_template_directory() . '/inc/blocks/blocks-init.php';
