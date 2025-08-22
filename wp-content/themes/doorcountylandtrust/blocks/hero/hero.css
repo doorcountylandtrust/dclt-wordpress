@@ -1,17 +1,21 @@
 /* 
- * Hero Block CSS
+ * Enhanced Hero Block CSS
  * File: blocks/hero/hero.css
+ * Door County Land Trust - Professional hero section styling
  */
 
+/* Base Hero Structure */
 .dclt-hero-block {
-    min-height: 60vh;
+    min-height: 65vh;
     display: flex;
     align-items: center;
+    position: relative;
+    overflow: hidden;
 }
 
 @media (max-width: 768px) {
     .dclt-hero-block {
-        min-height: 50vh;
+        min-height: 55vh;
     }
     
     .dclt-hero-block .hero-content {
@@ -22,15 +26,164 @@
     }
 }
 
+/* Background Image Enhancements */
+.dclt-hero-block img {
+    width: 100%;
+    object-position: center center;
+    filter: brightness(0.85) contrast(1.1);
+    transition: transform 8s ease-out;
+}
+
+.dclt-hero-block[data-background-type="image"]:hover .absolute.inset-0 img {
+    transform: scale(1.02);
+}
+
+/* Video Background */
 .dclt-hero-block video {
     object-position: center center;
+    filter: brightness(0.9) contrast(1.05);
 }
 
+/* Enhanced Overlay System */
+.dclt-hero-block[data-background-type="image"] .absolute.inset-0 {
+    background: linear-gradient(135deg, rgba(0, 104, 71, 0.4) 0%, rgba(0, 77, 53, 0.6) 100%);
+}
+
+.dclt-hero-block[data-background-type="video"] .absolute.inset-0 {
+    background: linear-gradient(135deg, rgba(0, 104, 71, 0.3) 0%, rgba(0, 77, 53, 0.5) 100%);
+}
+
+/* Typography Enhancements */
+.dclt-hero-block h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+    margin-bottom: 1.5rem;
+}
+
+.dclt-hero-block p {
+    font-size: clamp(1.125rem, 2.5vw, 1.5rem);
+    line-height: 1.5;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    margin-bottom: 2rem;
+}
+
+/* Container Padding Fix */
+.dclt-hero-block .py-20 {
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+}
+
+@media (min-width: 768px) {
+    .dclt-hero-block .py-20 {
+        padding-top: 4rem;
+        padding-bottom: 4rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .dclt-hero-block .py-20 {
+        padding-top: 5rem;
+        padding-bottom: 5rem;
+    }
+}
+
+/* Enhanced Button Styling */
+.dclt-hero-block a[class*="bg-"] {
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-weight: 700;
+    font-size: 1.125rem;
+    padding: 1rem 2rem;
+    border-radius: 0.75rem;
+    text-transform: none;
+    letter-spacing: 0.01em;
+    position: relative;
+    overflow: hidden;
+}
+
+.dclt-hero-block a[class*="bg-"]:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.dclt-hero-block a[class*="bg-"]:active {
+    transform: translateY(-1px);
+    transition: transform 0.1s ease;
+}
+
+/* Button Ripple Effect */
+.dclt-hero-block a[class*="bg-"]::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+.dclt-hero-block a[class*="bg-"]:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Secondary Button Styling */
+.dclt-hero-block a[class*="border-"] {
+    backdrop-filter: blur(15px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dclt-hero-block a[class*="border-"]:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Content Container Improvements */
+.dclt-hero-block .hero-content {
+    position: relative;
+    z-index: 20;
+}
+
+.dclt-hero-block .hero-content .flex {
+    gap: 1rem;
+}
+
+@media (max-width: 640px) {
+    .dclt-hero-block .hero-content .flex {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .dclt-hero-block a[class*="bg-"],
+    .dclt-hero-block a[class*="border-"] {
+        width: 100%;
+        max-width: 280px;
+    }
+}
+
+/* Curved Bottom Enhancement */
 .dclt-hero-block .curve-fill {
     transition: fill 0.3s ease;
+    fill: white;
 }
 
-/* Animation for text content */
+.dclt-hero-block svg {
+    filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.1));
+}
+
+/* Content Animation System */
 .dclt-hero-block .hero-content > * {
     animation: heroContentSlideUp 0.8s ease-out forwards;
     opacity: 0;
@@ -56,11 +209,121 @@
     }
 }
 
-/* Respect reduced motion preferences */
+/* Background Parallax Effect */
+@media (min-width: 1024px) {
+    .dclt-hero-block .absolute.inset-0 {
+        transform: translateZ(0);
+        will-change: transform;
+    }
+}
+
+/* Content Readability Enhancements */
+.dclt-hero-block .text-white {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dclt-hero-block .text-white\/90 {
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Focus States */
+.dclt-hero-block a:focus {
+    outline: 3px solid rgba(255, 255, 255, 0.8);
+    outline-offset: 3px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    .dclt-hero-block {
+        border: 2px solid currentColor;
+    }
+    
+    .dclt-hero-block a {
+        border: 2px solid currentColor;
+    }
+    
+    .dclt-hero-block .absolute.inset-0 {
+        background: rgba(0, 0, 0, 0.7) !important;
+    }
+}
+
+/* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
     .dclt-hero-block .hero-content > * {
         animation: none !important;
         opacity: 1 !important;
         transform: none !important;
     }
+    
+    .dclt-hero-block img,
+    .dclt-hero-block video {
+        transition: none !important;
+    }
+    
+    .dclt-hero-block a {
+        transition: none !important;
+    }
+    
+    .dclt-hero-block a:hover {
+        transform: none !important;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .dclt-hero-block {
+        min-height: auto;
+        background: white !important;
+        color: black !important;
+    }
+    
+    .dclt-hero-block .absolute {
+        display: none;
+    }
+    
+    .dclt-hero-block .curve-fill {
+        display: none;
+    }
+    
+    .dclt-hero-block a {
+        border: 2px solid black;
+        background: white;
+        color: black;
+    }
+}
+
+/* Performance Optimizations */
+.dclt-hero-block {
+    contain: layout style paint;
+}
+
+.dclt-hero-block .absolute.inset-0 {
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* Content Width Responsive Adjustments */
+@media (min-width: 1400px) {
+    .dclt-hero-block .hero-content.max-w-2xl {
+        max-width: 42rem;
+    }
+    
+    .dclt-hero-block .hero-content.max-w-3xl {
+        max-width: 56rem;
+    }
+}
+
+/* Loading State */
+.dclt-hero-block[data-loading="true"] {
+    background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+}
+
+.dclt-hero-block[data-loading="true"] .hero-content {
+    opacity: 0.7;
+}
+
+
+
+.hero-img-container {
+    width: 100%;
 }
