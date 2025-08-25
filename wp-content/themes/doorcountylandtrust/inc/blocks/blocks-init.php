@@ -141,6 +141,32 @@ if (file_exists($hero_meta)) { require_once $hero_meta; }
 $cta_meta  = get_template_directory() . '/blocks/cta/cta-meta-box.php';
 if (file_exists($cta_meta))  { require_once $cta_meta; }
 
+
+// After the require_once() lines:
+
+// Hook Hero meta box + save if those functions exist
+if (function_exists('dclt_add_hero_meta_box')) {
+    add_action('add_meta_boxes', 'dclt_add_hero_meta_box');
+}
+if (function_exists('dclt_save_hero_meta_box')) {
+    add_action('save_post', 'dclt_save_hero_meta_box');
+}
+
+// Hook CTA meta box + save if those functions exist
+if (function_exists('dclt_add_cta_meta_box')) {
+    add_action('add_meta_boxes', 'dclt_add_cta_meta_box');
+}
+if (function_exists('dclt_save_cta_meta_box')) {
+    add_action('save_post', 'dclt_save_cta_meta_box');
+}
+
+// Needed if your meta boxes use the media library (image/video pickers)
+add_action('admin_enqueue_scripts', function ($hook) {
+    if ($hook === 'post.php' || $hook === 'post-new.php') {
+        wp_enqueue_media();
+    }
+});
+
 /* ============================================================================
  * Conditional asset loading
  * ========================================================================== */
@@ -202,3 +228,11 @@ function dclt_add_brand_colors() {
     }</style>';
 }
 add_action('wp_head', 'dclt_add_brand_colors');
+
+
+// TEMP: prove meta boxes can render
+add_action('add_meta_boxes', function () {
+    add_meta_box('dclt-test', 'DCLT Test Box', function () {
+        echo '<p>Meta boxes pipeline works.</p>';
+    }, ['page','post'], 'normal', 'high');
+});
