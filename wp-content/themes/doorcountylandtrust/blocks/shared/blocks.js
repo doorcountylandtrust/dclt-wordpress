@@ -57,36 +57,27 @@
     /**
      * Accessibility enhancements
      */
-    function initAccessibility() {
-        // Improve focus management for interactive elements
-        $('.dclt-button, .dclt-form-trigger').on('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                $(this).click();
-            }
-        });
-
-        // Add ARIA labels where needed
-        $('.counter-number').attr('aria-live', 'polite');
-        
-        // Improve screen reader experience for feature grids
-        $('.feature-item').each(function(index) {
-            $(this).attr('aria-labelledby', `feature-${index}-title`);
-            $(this).find('h3').attr('id', `feature-${index}-title`);
-        });
-    }
+    
 
     /**
      * Performance optimizations
      */
-    function initAccessibility() {
-    // Improve focus management for interactive elements
-    $('.dclt-button, .dclt-form-trigger').on('keydown', function(e) {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            $(this).click();
-        }
-    });
+    // Keep only ONE initAccessibility() with everything inside:
+function initAccessibility() {
+  $('.dclt-button, .dclt-form-trigger').on('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $(this).click(); }
+  });
+  $('.counter-number').attr('aria-live', 'polite');
+  $('.feature-item').each(function(index) {
+    $(this).attr('aria-labelledby', `feature-${index}-title`);
+    $(this).find('h3').attr('id', `feature-${index}-title`);
+  });
+  // hero ARIA IDs
+  $('.dclt-hero-block').each(function(index) {
+    $(this).attr('aria-labelledby', `hero-${index}-title`);
+    $(this).find('h1').attr('id', `hero-${index}-title`);
+  });
+}
 
     // Add ARIA labels where needed
     $('.counter-number').attr('aria-live', 'polite');

@@ -1,319 +1,204 @@
-<?php 
+<?php
 /**
- * Door County Land Trust - Modular Block Registration System (No ACF)
+ * Door County Land Trust — Modular Block Registration (No ACF)
+ * Safe helpers, admin-safe render callbacks, conditional assets.
  */
 
-error_log('DCLT blocks-init.php file is loading!');
+if (!defined('ABSPATH')) { exit; }
 
-// Prevent direct access
-if (!defined('ABSPATH')) {
-    exit;
+/* ============================================================================
+ * Helpers (guarded to avoid redeclare fatals)
+ * ========================================================================== */
+if (!function_exists('dclt_get_field')) {
+    function dclt_get_field($post_id, $field_name, $block_id = '', $default = '') {
+        $key   = $block_id ? "dclt_{$block_id}_{$field_name}" : "dclt_{$field_name}";
+        $value = get_post_meta($post_id, $key, true);
+        return ($value !== '' && $value !== null) ? $value : $default;
+    }
+}
+if (!function_exists('dclt_update_field')) {
+    function dclt_update_field($post_id, $field_name, $value, $block_id = '') {
+        $key = $block_id ? "dclt_{$block_id}_{$field_name}" : "dclt_{$field_name}";
+        return update_post_meta($post_id, $key, $value);
+    }
 }
 
-// =============================================================================
-// CUSTOM FIELD FUNCTIONS (WordPress Native)
-// =============================================================================
-
-/**
- * Our replacement for get_field() - works with WordPress native meta
- */
-function dclt_get_field($post_id, $field_name, $block_id = '', $default = '') {
-    // Create unique meta key for this field
-    $meta_key = $block_id ? "dclt_{$block_id}_{$field_name}" : "dclt_{$field_name}";
-    
-    // Get the meta value
-    $value = get_post_meta($post_id, $meta_key, true);
-    
-    // Return default if empty
-    return !empty($value) ? $value : $default;
+/* ============================================================================
+ * Utilities (spacing/container/buttons)
+ * ========================================================================== */
+if (!function_exists('dclt_get_spacing_class')) {
+    function dclt_get_spacing_class($spacing = 'medium') {
+        $map = [
+            'compact'  => 'py-8 md:py-12',
+            'medium'   => 'py-16 md:py-20',
+            'spacious' => 'py-24 md:py-32',
+        ];
+        return isset($map[$spacing]) ? $map[$spacing] : $map['medium'];
+    }
+}
+if (!function_exists('dclt_get_container_class')) {
+    function dclt_get_container_class($width = 'content') {
+        $map = [
+            'content' => 'max-w-6xl mx-auto px-4 sm:px-6 lg:px-8',
+            'wide'    => 'max-w-7xl mx-auto px-4 sm:px-6 lg:px-8',
+            'full'    => 'w-full px-4 sm:px-6 lg:px-8',
+        ];
+        return isset($map[$width]) ? $map[$width] : $map['content'];
+    }
+}
+if (!function_exists('dclt_get_button_class')) {
+    function dclt_get_button_class($style = 'primary') {
+        $base = 'inline-flex items-center justify-center px-6 py-3 rounded-lg font-semibold text-base transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2';
+        $map = [
+            'primary'   => $base.' bg-brand-700 text-white hover:bg-brand-800 focus:ring-brand-500 shadow-sm',
+            'secondary' => $base.' bg-white text-brand-700 border-2 border-brand-700 hover:bg-brand-50 focus:ring-brand-500',
+            'outline'   => $base.' border-2 border-current text-current hover:bg-current hover:text-white focus:ring-current',
+            'landowner' => $base.' bg-brand-700 text-white hover:bg-brand-800 px-8 py-4 text-lg font-bold focus:ring-brand-500',
+            'explore'   => $base.' bg-green-600 text-white hover:bg-green-700 focus:ring-green-500',
+        ];
+        return isset($map[$style]) ? $map[$style] : $map['primary'];
+    }
 }
 
-/**
- * Our replacement for update_field()
- */
-function dclt_update_field($post_id, $field_name, $value, $block_id = '') {
-    $meta_key = $block_id ? "dclt_{$block_id}_{$field_name}" : "dclt_{$field_name}";
-    return update_post_meta($post_id, $meta_key, $value);
-}
-
-// =============================================================================
-// BLOCK REGISTRATION (Custom Gutenberg Blocks)
-// =============================================================================
-
-/**
- * Register all custom blocks
- */
+/* ============================================================================
+ * Block registration
+ * ========================================================================== */
 function dclt_register_blocks() {
-    // Register Hero Block JavaScript for editor
+    // Editor scripts
     wp_register_script(
         'dclt-hero-block-editor',
         get_template_directory_uri() . '/blocks/hero/hero-editor.js',
-        array('wp-blocks', 'wp-element', 'wp-editor', 'wp-components', 'wp-i18n'),
-        '1.0.0'
+        ['wp-blocks','wp-element','wp-editor','wp-components','wp-i18n'],
+        '1.1.0',
+        true
     );
-
-    // Register Hero Block
-    register_block_type('dclt/hero', array(
-        'editor_script' => 'dclt-hero-block-editor',
-        'render_callback' => 'dclt_render_hero_block',
-        'attributes' => array(
-            'blockId' => array(
-                'type' => 'string',
-                'default' => ''
-            )
-        )
-    ));
-
-    // Register CTA Block JavaScript for editor
     wp_register_script(
         'dclt-cta-block-editor',
         get_template_directory_uri() . '/blocks/cta/cta-editor.js',
-        array('wp-blocks', 'wp-element', 'wp-editor', 'wp-components', 'wp-i18n'),
-        '1.0.0'
+        ['wp-blocks','wp-element','wp-editor','wp-components','wp-i18n'],
+        '1.0.0',
+        true
     );
 
-    // Register CTA Block
-    register_block_type('dclt/cta', array(
-        'editor_script' => 'dclt-cta-block-editor',
+    // Register blocks (server-rendered)
+    register_block_type('dclt/hero', [
+        'editor_script'   => 'dclt-hero-block-editor',
+        'render_callback' => 'dclt_render_hero_block',
+        'attributes'      => [
+            'blockId' => ['type'=>'string','default'=>''],
+        ],
+    ]);
+
+    register_block_type('dclt/cta', [
+        'editor_script'   => 'dclt-cta-block-editor',
         'render_callback' => 'dclt_render_cta_block',
-        'attributes' => array(
-            'blockId' => array(
-                'type' => 'string',
-                'default' => ''
-            )
-        )
-    ));
-    
-    error_log('All blocks registered successfully!');
+        'attributes'      => [
+            'blockId' => ['type'=>'string','default'=>''],
+        ],
+    ]);
 }
 add_action('init', 'dclt_register_blocks');
 
-// =============================================================================
-// BLOCK RENDER CALLBACKS
-// =============================================================================
-
-/**
- * Render callback for Hero block - uses modular template
- */
+/* ============================================================================
+ * Render callbacks (admin-safe)
+ * ========================================================================== */
 function dclt_render_hero_block($attributes, $content) {
+    // Prevent template fatals from crashing wp-admin lists
+    if (is_admin() && !wp_doing_ajax()) { return '<!-- dclt/hero: admin bypass -->'; }
+
     global $dclt_attributes;
     $dclt_attributes = $attributes;
-    
-    ob_start();
-    include get_template_directory() . '/blocks/hero/hero.php';
-    return ob_get_clean();
+
+    $template = get_template_directory() . '/blocks/hero/hero.php';
+    if (file_exists($template)) {
+        ob_start();
+        include $template;
+        return ob_get_clean();
+    }
+    return '<section class="dclt-hero-block" style="padding:2rem;border:2px dashed #065f46;border-radius:12px">Missing hero.php</section>';
 }
 
-/**
- * Render callback for CTA block - uses modular template
- */
 function dclt_render_cta_block($attributes, $content) {
+    if (is_admin() && !wp_doing_ajax()) { return '<!-- dclt/cta: admin bypass -->'; }
+
     global $dclt_attributes;
     $dclt_attributes = $attributes;
-    
-    ob_start();
-    include get_template_directory() . '/blocks/cta/cta.php';
-    return ob_get_clean();
-}
 
-// =============================================================================
-// ADMIN META BOXES
-// =============================================================================
-
-/**
- * Add meta box for Hero block settings
- */
-function dclt_add_hero_meta_box() {
-    $post_types = ['page', 'post'];
-    
-    foreach ($post_types as $post_type) {
-        add_meta_box(
-            'dclt-hero-fields',
-            'Hero Block Settings',
-            'dclt_hero_meta_box_callback',
-            $post_type,
-            'normal',
-            'high'
-        );
+    $template = get_template_directory() . '/blocks/cta/cta.php';
+    if (file_exists($template)) {
+        ob_start();
+        include $template;
+        return ob_get_clean();
     }
+    return '<div class="dclt-error">CTA block template not found</div>';
 }
-add_action('add_meta_boxes', 'dclt_add_hero_meta_box');
 
-/**
- * Add meta box for CTA block settings
- */
-function dclt_add_cta_meta_box() {
-    $post_types = ['page', 'post'];
-    
-    foreach ($post_types as $post_type) {
-        add_meta_box(
-            'dclt-cta-fields',
-            'CTA Block Settings',
-            'dclt_cta_meta_box_callback',
-            $post_type,
-            'normal',
-            'high'
-        );
-    }
-}
-add_action('add_meta_boxes', 'dclt_add_cta_meta_box');
+/* ============================================================================
+ * Meta boxes (include if present)
+ * ========================================================================== */
+$hero_meta = get_template_directory() . '/blocks/hero/hero-meta-box.php';
+if (file_exists($hero_meta)) { require_once $hero_meta; }
+$cta_meta  = get_template_directory() . '/blocks/cta/cta-meta-box.php';
+if (file_exists($cta_meta))  { require_once $cta_meta; }
 
-// Include meta box functions
-require_once get_template_directory() . '/blocks/hero/hero-meta-box.php';
-require_once get_template_directory() . '/blocks/cta/cta-meta-box.php';
-
-// =============================================================================
-// PERFORMANCE OPTIMIZED ASSET LOADING
-// =============================================================================
-
-// Smart conditional asset loading - Only load CSS/JS for blocks actually used on the page
+/* ============================================================================
+ * Conditional asset loading
+ * ========================================================================== */
 function dclt_enqueue_block_assets_conditionally() {
+    if (is_admin()) { return; } // frontend only
+
     global $post;
-    
-    if (!$post) {
-        $post = get_queried_object();
+    if (!$post) { $post = get_queried_object(); }
+    if (!$post || empty($post->post_content)) { return; }
+
+    $used = [];
+    if (has_block('dclt/hero', $post)) { $used[] = 'hero'; }
+    if (has_block('dclt/cta',  $post)) { $used[] = 'cta';  }
+
+    if (!empty($used)) {
+        $shared_css = get_template_directory() . '/blocks/shared/blocks.css';
+        if (file_exists($shared_css)) {
+            wp_enqueue_style('dclt-blocks-shared', get_template_directory_uri().'/blocks/shared/blocks.css', [], '1.0.0');
+        }
+        $shared_js = get_template_directory() . '/blocks/shared/blocks.js';
+        if (file_exists($shared_js)) {
+            wp_enqueue_script('dclt-blocks-shared', get_template_directory_uri().'/blocks/shared/blocks.js', ['jquery'], '1.0.0', true);
+        }
     }
-    
-    if (!$post || !isset($post->post_content)) {
-        return;
-    }
-    
-    $blocks_used = [];
-    
-    // Check which blocks are actually used on this page
-    if (has_block('dclt/hero', $post)) {
-        $blocks_used[] = 'hero';
-    }
-    if (has_block('dclt/cta', $post)) {
-        $blocks_used[] = 'cta';
-    }
-    
-    // Only load shared assets if ANY blocks are used
-    if (!empty($blocks_used)) {
-        wp_enqueue_style(
-            'dclt-blocks-shared',
-            get_template_directory_uri() . '/blocks/shared/blocks.css',
-            [],
-            '1.0.0'
-        );
-        
-        wp_enqueue_script(
-            'dclt-blocks-shared',
-            get_template_directory_uri() . '/blocks/shared/blocks.js',
-            ['jquery'],
-            '1.0.0',
-            true
-        );
-    }
-    
-    // Load individual block assets only if used
-    foreach ($blocks_used as $block) {
-        dclt_enqueue_individual_block_assets($block);
+
+    foreach ($used as $block) {
+        $base = get_template_directory();
+        $url  = get_template_directory_uri();
+        $css  = "{$base}/blocks/{$block}/{$block}.css";
+        $js   = "{$base}/blocks/{$block}/{$block}.js";
+
+        if (file_exists($css)) {
+            wp_enqueue_style("dclt-{$block}", "{$url}/blocks/{$block}/{$block}.css", ['dclt-blocks-shared'], '1.1.0');
+        }
+        if (file_exists($js)) {
+            wp_enqueue_script("dclt-{$block}", "{$url}/blocks/{$block}/{$block}.js", ['dclt-blocks-shared'], '1.1.0', true);
+        }
     }
 }
 add_action('wp_enqueue_scripts', 'dclt_enqueue_block_assets_conditionally');
 
-// Load individual block assets
-function dclt_enqueue_individual_block_assets($block_name) {
-    $block_path = get_template_directory();
-    $block_url = get_template_directory_uri();
-    
-    // CSS - only if file exists
-    $css_file = "{$block_path}/blocks/{$block_name}/{$block_name}.css";
-    if (file_exists($css_file)) {
-        wp_enqueue_style(
-            "dclt-{$block_name}",
-            "{$block_url}/blocks/{$block_name}/{$block_name}.css",
-            ['dclt-blocks-shared'],
-            '1.0.0'
-        );
-    }
-    
-    // JavaScript - only if file exists  
-    $js_file = "{$block_path}/blocks/{$block_name}/{$block_name}.js";
-    if (file_exists($js_file)) {
-        wp_enqueue_script(
-            "dclt-{$block_name}",
-            "{$block_url}/blocks/{$block_name}/{$block_name}.js",
-            ['dclt-blocks-shared'],
-            '1.0.0',
-            true
-        );
-    }
-}
-
-// Remove WordPress bloat for faster loading
 function dclt_remove_wordpress_bloat() {
-    // Remove emoji scripts (saves ~15KB)
     remove_action('wp_head', 'print_emoji_detection_script', 7);
     remove_action('wp_print_styles', 'print_emoji_styles');
-    
-    // Remove block editor CSS on frontend (saves ~20KB if not using core blocks)
     wp_dequeue_style('wp-block-library');
     wp_dequeue_style('wp-block-library-theme');
     wp_dequeue_style('classic-theme-styles');
 }
-add_action('wp_enqueue_scripts', 'dclt_remove_wordpress_bloat');
+add_action('wp_enqueue_scripts', 'dclt_remove_wordpress_bloat', 100);
 
-// =============================================================================
-// HELPER FUNCTIONS
-// =============================================================================
-
-// Helper function to get block spacing class
-function dclt_get_spacing_class($spacing = 'medium') {
-    $spacing_map = [
-        'small' => 'py-8',
-        'medium' => 'py-16',
-        'large' => 'py-24',
-        'xlarge' => 'py-32'
-    ];
-    
-    return isset($spacing_map[$spacing]) ? $spacing_map[$spacing] : $spacing_map['medium'];
+/* ============================================================================
+ * Brand CSS variables (optional helper)
+ * ========================================================================== */
+function dclt_add_brand_colors() {
+    echo '<style>:root{
+        --brand-50:#f0fdf4;--brand-100:#dcfce7;--brand-200:#bbf7d0;--brand-300:#86efac;
+        --brand-400:#4ade80;--brand-500:#22c55e;--brand-600:#16a34a;--brand-700:#065f46;
+        --brand-800:#047857;--brand-900:#064e3b;
+    }</style>';
 }
-
-// Helper function to get container width class
-function dclt_get_container_class($width = 'content') {
-    $container_map = [
-        'narrow' => 'max-w-3xl mx-auto px-4',
-        'content' => 'max-w-6xl mx-auto px-4', 
-        'wide' => 'max-w-7xl mx-auto px-4',
-        'full' => 'w-full px-4'
-    ];
-    
-    return isset($container_map[$width]) ? $container_map[$width] : $container_map['content'];
-}
-
-// Helper function for button classes
-function dclt_get_button_class($style = 'primary') {
-    $button_map = [
-        'primary' => 'bg-brand text-white hover:bg-brand-700 px-6 py-3 rounded-lg font-semibold transition-colors duration-200',
-        'secondary' => 'bg-white text-brand border-2 border-brand hover:bg-brand hover:text-white px-6 py-3 rounded-lg font-semibold transition-all duration-200',
-        'landowner' => 'bg-primary-700 text-white hover:bg-primary-800 px-8 py-4 rounded-lg font-bold text-lg transition-colors duration-200',
-        'explore' => 'bg-green-600 text-white hover:bg-green-700 px-6 py-3 rounded-lg font-semibold transition-colors duration-200'
-    ];
-    
-    return isset($button_map[$style]) ? $button_map[$style] : $button_map['primary'];
-}
-
-// Helper function for CTA button classes
-function dclt_get_cta_button_class($style, $background_style, $is_primary) {
-    $base_classes = 'inline-flex items-center justify-center px-6 py-3 md:px-8 md:py-4 rounded-lg font-semibold text-lg transition-all duration-200 hover:transform hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2';
-    
-    // Adjust button style based on background using semantic tokens
-    if ($background_style === 'brand-primary' || $background_style === 'image') {
-        // On dark backgrounds
-        if ($style === 'primary' || ($is_primary && $style === 'secondary')) {
-            return $base_classes . ' bg-button-primary text-text-inverse hover:bg-button-hover focus:ring-button-primary';
-        } else {
-            return $base_classes . ' border-2 border-button-primary text-button-primary hover:bg-button-primary hover:text-text-inverse focus:ring-button-primary';
-        }
-    } else {
-        // On light backgrounds
-        if ($style === 'primary') {
-            return $base_classes . ' bg-button-primary text-text-inverse hover:bg-button-hover focus:ring-button-primary';
-        } else {
-            return $base_classes . ' border-2 border-button-primary text-button-primary hover:bg-button-primary hover:text-text-inverse focus:ring-button-primary';
-        }
-    }
-}
-?>
+add_action('wp_head', 'dclt_add_brand_colors');
