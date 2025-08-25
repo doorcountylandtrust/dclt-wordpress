@@ -230,9 +230,3 @@ function dclt_add_brand_colors() {
 add_action('wp_head', 'dclt_add_brand_colors');
 
 
-// TEMP: prove meta boxes can render
-add_action('add_meta_boxes', function () {
-    add_meta_box('dclt-test', 'DCLT Test Box', function () {
-        echo '<p>Meta boxes pipeline works.</p>';
-    }, ['page','post'], 'normal', 'high');
-});

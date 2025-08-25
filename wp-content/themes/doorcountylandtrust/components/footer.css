@@ -1,0 +1,77 @@
+/* Minimal, tasteful footer styling without Tailwind */
+.site-footer {
+  --brand-700: #065f46;
+  --brand-50: #f0fdf4;
+  --ink: #0f172a;
+  --muted: #475569;
+  --border: #e2e8f0;
+  background: linear-gradient(180deg, var(--brand-50), #ffffff 60%);
+  border-top: 1px solid var(--border);
+  color: var(--ink);
+  margin-top: 3rem;
+}
+
+.footer-top {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 1rem 2rem;
+  display: grid;
+  grid-template-columns: 1.2fr 2fr;
+  gap: 2rem;
+}
+
+@media (max-width: 900px) {
+  .footer-top {
+    grid-template-columns: 1fr;
+  }
+}
+
+.footer-brand .footer-logo { display: inline-flex; align-items: center; gap: .5rem; text-decoration: none; }
+.footer-brand .footer-site-name { font-weight: 800; font-size: 1.25rem; color: var(--brand-700); }
+
+.footer-mission { margin: .75rem 0 1.25rem; color: var(--muted); max-width: 36ch; }
+
+.footer-signup { display: grid; grid-template-columns: 1fr auto; gap: .5rem; max-width: 420px; }
+.footer-signup input {
+  border: 1px solid var(--border); border-radius: .5rem; padding: .75rem .9rem; font: inherit;
+}
+.footer-signup button {
+  background: var(--brand-700); color: #fff; border: none; border-radius: .5rem; padding: .75rem 1rem;
+  font-weight: 700; cursor: pointer;
+}
+.footer-signup button:hover { filter: brightness(0.95); }
+.footer-signup-note { display: block; margin-top: .5rem; color: var(--muted); font-size: .85rem; }
+
+.footer-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+@media (max-width: 900px) {
+  .footer-nav { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  .footer-nav { grid-template-columns: 1fr; }
+}
+
+.footer-col h3 { font-size: 1rem; font-weight: 800; margin: 0 0 .75rem; color: var(--ink); }
+.footer-col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: .4rem; }
+.footer-col a { color: var(--muted); text-decoration: none; }
+.footer-col a:hover { color: var(--brand-700); text-decoration: underline; }
+
+.footer-address a { color: var(--muted); }
+.footer-address a:hover { color: var(--brand-700); }
+
+.footer-bottom {
+  border-top: 1px solid var(--border);
+  margin-top: 1.5rem;
+  padding: 1rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  max-width: 1200px; margin-left: auto; margin-right: auto;
+  color: var(--muted);
+}
+.footer-legal { list-style: none; display: flex; gap: 1rem; margin: 0; padding: 0; }
+.footer-legal a { color: var(--muted); text-decoration: none; }
+.footer-legal a:hover { color: var(--brand-700); text-decoration: underline; }
+
+/* tiny helper for “screen-reader only” label */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
