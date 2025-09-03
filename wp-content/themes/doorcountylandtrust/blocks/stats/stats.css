@@ -1,0 +1,32 @@
+/* DCLT Stats Block (MVP) */
+.dclt-stats-block { --brand-700:#065f46; }
+.dclt-stats-block .stats-head .kicker { color: var(--brand-700); }
+
+.dclt-stats-block .stats-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap:1.75rem;
+}
+@media (max-width: 900px){
+  .dclt-stats-block .stats-grid{ grid-template-columns: 1fr; }
+}
+
+.dclt-stats-block .stat{
+  background: #f9fafb;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+}
+
+.dclt-stats-block .stat-number{
+  font-weight: 900;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  line-height: 1.1;
+  color:#111827;
+}
+.dclt-stats-block .stat-label{
+  margin-top:.5rem;
+  color:#374151;
+  font-size:1rem;
+}

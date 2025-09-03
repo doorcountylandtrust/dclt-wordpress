@@ -72,6 +72,17 @@ function dclt_register_blocks() {
         '1.1.0',
         true
     );
+
+    wp_register_script(
+        'dclt-stats-block-editor',
+        get_template_directory_uri() . '/blocks/stats/stats-editor.js',
+        array('wp-blocks','wp-element','wp-editor','wp-components','wp-i18n'),
+        '1.0.0',
+        true
+    );
+
+  
+
     wp_register_script(
         'dclt-cta-block-editor',
         get_template_directory_uri() . '/blocks/cta/cta-editor.js',
@@ -88,6 +99,14 @@ function dclt_register_blocks() {
             'blockId' => ['type'=>'string','default'=>''],
         ],
     ]);
+
+      register_block_type('dclt/stats', array(
+        'editor_script'   => 'dclt-stats-block-editor',
+        'render_callback' => 'dclt_render_stats_block',
+        'attributes'      => array(
+            'blockId' => array('type'=>'string','default'=>'')
+        )
+    ));
 
     register_block_type('dclt/cta', [
         'editor_script'   => 'dclt-cta-block-editor',
@@ -118,6 +137,16 @@ function dclt_render_hero_block($attributes, $content) {
     return '<section class="dclt-hero-block" style="padding:2rem;border:2px dashed #065f46;border-radius:12px">Missing hero.php</section>';
 }
 
+function dclt_render_stats_block($attributes, $content){
+  global $dclt_attributes;
+  $dclt_attributes = $attributes;
+
+  ob_start();
+  $tpl = get_template_directory() . '/blocks/stats/stats.php';
+  if (file_exists($tpl)) include $tpl;
+  return ob_get_clean();
+}
+
 function dclt_render_cta_block($attributes, $content) {
     if (is_admin() && !wp_doing_ajax()) { return '<!-- dclt/cta: admin bypass -->'; }
 
@@ -141,7 +170,10 @@ if (file_exists($hero_meta)) { require_once $hero_meta; }
 $cta_meta  = get_template_directory() . '/blocks/cta/cta-meta-box.php';
 if (file_exists($cta_meta))  { require_once $cta_meta; }
 
-
+$stats_meta_box = get_template_directory() . '/blocks/stats/stats-meta-box.php';
+if (file_exists($stats_meta_box)) {
+  require_once $stats_meta_box;
+}
 // After the require_once() lines:
 
 // Hook Hero meta box + save if those functions exist
@@ -180,7 +212,9 @@ function dclt_enqueue_block_assets_conditionally() {
     $used = [];
     if (has_block('dclt/hero', $post)) { $used[] = 'hero'; }
     if (has_block('dclt/cta',  $post)) { $used[] = 'cta';  }
-
+    if (has_block('dclt/stats', $post)) {
+        $blocks_used[] = 'stats';
+    }
     if (!empty($used)) {
         $shared_css = get_template_directory() . '/blocks/shared/blocks.css';
         if (file_exists($shared_css)) {
