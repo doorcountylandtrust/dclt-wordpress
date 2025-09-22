@@ -5,6 +5,12 @@ export default {
     './assets/**/*.js',
     './components/*.css',
   ],
+  safelist: [
+    // number colors
+    'text-brand-700','text-brand-500','text-neutral-900','text-neutral-700','text-white',
+    // label colors
+    'text-neutral-700','text-neutral-600','text-neutral-900','text-white'
+  ],
   theme: {
     extend: {
       colors: {

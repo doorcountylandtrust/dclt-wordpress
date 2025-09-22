@@ -1,43 +1,26 @@
 /*
- * Door County Land Trust — Hero Block
+ * Door County Land Trust — Enhanced Hero Block
  * File: blocks/hero/hero.css
- * Purpose: Full-bleed, accessible, high-contrast hero with image/video/color support
- * Notes:
- *  - Pairs with hero.php using .dclt-hero-media and .dclt-hero-overlay layers
- *  - Minimal globals; most styling scoped to .dclt-hero-block
+ * Mission: Create emotional connection with conservation impact
  */
-
-/* ------------------------------
-   Base structure
------------------------------- */
 
 .dclt-hero-block {
   position: relative;
   overflow: hidden;
   display: flex;
   align-items: center;
-  min-height: 65vh;               /* Standard height */
-  width: 100vw;                   /* Full-bleed even inside centered wrappers */
+  min-height: 70vh;
+  width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
-
-  /* Performance */
   contain: layout style paint;
 }
 
-/* Optional header overlay spacing (uncomment + adjust if you use a sticky header)
-:root { --dclt-header-h: 72px; }
-.dclt-hero-block { padding-top: var(--dclt-header-h); } */
-
 @media (max-width: 768px) {
-  .dclt-hero-block { min-height: 55vh; }
+  .dclt-hero-block { min-height: 60vh; }
 }
 
-/* ------------------------------
-   Media & overlay layers
------------------------------- */
-
-/* Media always covers, regardless of type */
+/* Enhanced media treatment */
 .dclt-hero-media,
 .dclt-hero-overlay {
   position: absolute;
@@ -49,200 +32,242 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center;     /* can be overridden with inline vars in future */
-  transform: translateZ(0);
-}
-
-/* Image treatment + subtle hover scale (desktop only) */
-.dclt-hero-media img {
-  filter: brightness(0.9) contrast(1.1);
-  transition: transform 8s ease-out;
+  object-position: center center;
+  /* Enhanced image treatment for nature photography */
+  filter: brightness(0.85) contrast(1.15) saturate(1.1);
+  transition: transform 12s ease-out;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .dclt-hero-block:hover .dclt-hero-media img { transform: scale(1.02); }
+  .dclt-hero-block:hover .dclt-hero-media img { 
+    transform: scale(1.03);
+    filter: brightness(0.88) contrast(1.12) saturate(1.05);
+  }
 }
 
-/* Video treatment (slightly different curve) */
-.dclt-hero-media video {
-  filter: brightness(0.92) contrast(1.05);
-}
-
-/* A single overlay recipe; opacity is set inline from PHP via style="opacity: 0.4" */
+/* Sophisticated overlay for readability */
 .dclt-hero-overlay {
-  background: linear-gradient(135deg, rgba(0,104,71,0.35) 0%, rgba(0,77,53,0.55) 100%);
-  pointer-events: none;
+  background: linear-gradient(
+    135deg,
+    rgba(0, 45, 31, 0.4) 0%,
+    rgba(6, 95, 70, 0.35) 30%,
+    rgba(0, 104, 71, 0.45) 70%,
+    rgba(0, 77, 53, 0.6) 100%
+  );
+  /* Add subtle texture */
+  background-image: 
+    radial-gradient(circle at 20% 80%, rgba(255,255,255,0.05) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.03) 0%, transparent 50%);
 }
 
-/* ------------------------------
-   Content container
------------------------------- */
-
+/* Content styling with better hierarchy */
 .dclt-hero-block .hero-content {
   position: relative;
   z-index: 20;
-  max-width: 46rem;               /* ~736px “safe” copy width */
-  padding: 2rem 1rem;             /* inner pad so text never kisses edges */
+  max-width: 48rem;
+  padding: 2.5rem 1.5rem;
 }
 
-/* Alignments mapped from PHP */
-.dclt-hero-block .hero-content.text-left  { margin-left: 0; }
-.dclt-hero-block .hero-content.text-center { margin-left: auto; margin-right: auto; text-align: center; }
-.dclt-hero-block .hero-content.text-right  { margin-left: auto; text-align: right; }
-
-/* ------------------------------
-   Typography
------------------------------- */
-
+/* Typography with conservation mission focus */
 .dclt-hero-block h1 {
-  font-size: clamp(2.75rem, 5vw, 4.25rem);
+  font-size: clamp(2.5rem, 5.5vw, 4.5rem);
   font-weight: 800;
-  line-height: 1.08;
-  letter-spacing: -0.02em;
-  color: #ffffff;                                  /* assume text on media; color heroes can override */
-  text-shadow: 0 3px 10px rgba(0,0,0,0.5);
-  margin: 0 0 1rem 0;
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  margin: 0 0 1.25rem 0;
+  
+  /* Enhanced text shadow for perfect readability */
+  text-shadow: 
+    0 2px 4px rgba(0,0,0,0.5),
+    0 4px 8px rgba(0,0,0,0.3),
+    0 8px 16px rgba(0,0,0,0.2);
+    
+  /* Subtle text treatment */
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
 }
 
 .dclt-hero-block p {
-  font-size: clamp(1.125rem, 2.2vw, 1.35rem);
-  line-height: 1.5;
-  color: rgba(255,255,255,0.92);
-  text-shadow: 0 2px 6px rgba(0,0,0,0.4);
-  margin: 0 0 1.5rem 0;
+  font-size: clamp(1.125rem, 2.5vw, 1.4rem);
+  line-height: 1.6;
+  color: rgba(255,255,255,0.95);
+  margin: 0 0 2rem 0;
+  font-weight: 400;
+  
+  text-shadow: 
+    0 1px 2px rgba(0,0,0,0.4),
+    0 2px 4px rgba(0,0,0,0.3);
 }
 
-/* If you output a color-only hero (no overlay), let text adapt by adding .text-primary-900 in PHP when $bg_type === 'color' */
+/* Enhanced CTA buttons */
+.dclt-hero-block .cta-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 2rem;
+}
 
-/* ------------------------------
-   CTAs
------------------------------- */
-
-/* Primary (solid) buttons – assumes your dclt_get_button_class() sets bg-* classes */
-.dclt-hero-block a[class*="bg-"] {
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255,255,255,0.24);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.dclt-hero-block .cta-primary,
+.dclt-hero-block .cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 2.5rem;
+  border-radius: 0.75rem;
   font-weight: 700;
   font-size: 1.125rem;
-  padding: 1rem 2rem;
-  border-radius: 0.75rem;
-  letter-spacing: 0.01em;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2px solid transparent;
+  min-width: 200px;
+  text-align: center;
   position: relative;
   overflow: hidden;
-  text-decoration: none;
-  display: inline-block;
-  text-align: center;
 }
 
-.dclt-hero-block a[class*="bg-"]:hover {
+/* Primary CTA - Conservation Action */
+.dclt-hero-block .cta-primary {
+  background: linear-gradient(135deg, #059669 0%, #065f46 100%);
+  color: white;
+  border-color: rgba(255,255,255,0.2);
+  box-shadow: 
+    0 4px 12px rgba(6, 95, 70, 0.4),
+    0 2px 4px rgba(0,0,0,0.2),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+}
+
+.dclt-hero-block .cta-primary:hover {
+  background: linear-gradient(135deg, #047857 0%, #064e3b 100%);
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.25);
-  border-color: rgba(255,255,255,0.34);
+  box-shadow: 
+    0 6px 20px rgba(6, 95, 70, 0.5),
+    0 4px 8px rgba(0,0,0,0.3);
+  border-color: rgba(255,255,255,0.3);
 }
 
-.dclt-hero-block a[class*="bg-"]:active {
-  transform: translateY(-1px);
-  transition: transform 0.1s ease;
+/* Secondary CTA - Learn More */
+.dclt-hero-block .cta-secondary {
+  background: rgba(255,255,255,0.15);
+  color: white;
+  border: 2px solid rgba(255,255,255,0.8);
+  backdrop-filter: blur(10px);
 }
 
-/* Ripple effect */
-.dclt-hero-block a[class*="bg-"]::before {
+.dclt-hero-block .cta-secondary:hover {
+  background: rgba(255,255,255,0.25);
+  border-color: rgba(255,255,255,1);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+}
+
+/* Button ripple effect */
+.dclt-hero-block .cta-primary::before,
+.dclt-hero-block .cta-secondary::before {
   content: '';
   position: absolute;
-  inset: 50% auto auto 50%;
-  width: 0; height: 0;
+  inset: 50%;
+  width: 0;
+  height: 0;
   background: rgba(255,255,255,0.2);
   border-radius: 50%;
   transform: translate(-50%, -50%);
   transition: width 0.6s, height 0.6s;
-}
-.dclt-hero-block a[class*="bg-"]:active::before { width: 300px; height: 300px; }
-
-/* Secondary (outline / frosted) */
-.dclt-hero-block a[class*="border-"] {
-  backdrop-filter: blur(15px);
-  background: rgba(255,255,255,0.12);
-  border: 2px solid rgba(255,255,255,0.9);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.dclt-hero-block a[class*="border-"]:hover {
-  background: rgba(255,255,255,0.2);
-  border-color: rgba(255,255,255,1);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  pointer-events: none;
 }
 
-/* CTA row spacing */
-.dclt-hero-block .hero-content .flex { gap: 1rem; }
+.dclt-hero-block .cta-primary:active::before,
+.dclt-hero-block .cta-secondary:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Enhanced curved divider */
+.dclt-hero-block .curve-divider {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 60px;
+  overflow: hidden;
+}
+
+.dclt-hero-block .curve-divider svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 -2px 4px rgba(0,0,0,0.1));
+}
+
+.dclt-hero-block .curve-fill {
+  fill: #ffffff;
+}
+
+/* Mobile responsiveness */
 @media (max-width: 640px) {
-  .dclt-hero-block .hero-content .flex {
+  .dclt-hero-block .cta-buttons {
     flex-direction: column;
     align-items: center;
   }
-  .dclt-hero-block a[class*="bg-"],
-  .dclt-hero-block a[class*="border-"] {
+  
+  .dclt-hero-block .cta-primary,
+  .dclt-hero-block .cta-secondary {
     width: 100%;
-    max-width: 280px;
+    max-width: 300px;
+  }
+  
+  .dclt-hero-block .hero-content {
+    padding: 2rem 1rem;
+    text-align: center;
   }
 }
 
-/* ------------------------------
-   Curved divider polish
------------------------------- */
-
-.dclt-hero-block svg {
-  filter: drop-shadow(0 -2px 4px rgba(0,0,0,0.1));
-}
-.dclt-hero-block .curve-fill { fill: #fff; transition: fill 0.3s ease; }
-
-/* ------------------------------
-   Motion & accessibility
------------------------------- */
-
+/* Content animation */
 .dclt-hero-block .hero-content > * {
-  animation: dcltHeroSlideUp 0.8s ease-out forwards;
+  animation: heroContentSlide 0.8s ease-out forwards;
   opacity: 0;
   transform: translateY(30px);
 }
+
 .dclt-hero-block .hero-content h1 { animation-delay: 0.2s; }
 .dclt-hero-block .hero-content p { animation-delay: 0.4s; }
-.dclt-hero-block .hero-content .flex { animation-delay: 0.6s; }
+.dclt-hero-block .hero-content .cta-buttons { animation-delay: 0.6s; }
 
-@keyframes dcltHeroSlideUp {
-  to { opacity: 1; transform: translateY(0); }
+@keyframes heroContentSlide {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Keyboard focus */
-.dclt-hero-block a:focus {
-  outline: 3px solid rgba(255,255,255,0.85);
+/* Accessibility and reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .dclt-hero-block .hero-content > *,
+  .dclt-hero-block .cta-primary,
+  .dclt-hero-block .cta-secondary,
+  .dclt-hero-media img {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* Focus states */
+.dclt-hero-block .cta-primary:focus,
+.dclt-hero-block .cta-secondary:focus {
+  outline: 3px solid rgba(255,255,255,0.8);
   outline-offset: 3px;
 }
 
 /* High contrast support */
 @media (prefers-contrast: high) {
-  .dclt-hero-block { border: 2px solid currentColor; }
-  .dclt-hero-overlay { background: rgba(0,0,0,0.7); }
-  .dclt-hero-block a { border: 2px solid currentColor; }
+  .dclt-hero-overlay {
+    background: rgba(0,0,0,0.7);
+  }
+  
+  .dclt-hero-block .cta-primary,
+  .dclt-hero-block .cta-secondary {
+    border: 3px solid currentColor;
+  }
 }
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .dclt-hero-block .hero-content > * { animation: none !important; opacity: 1 !important; transform: none !important; }
-  .dclt-hero-media img, .dclt-hero-media video { transition: none !important; }
-  .dclt-hero-block a { transition: none !important; }
-  .dclt-hero-block a:hover { transform: none !important; }
-}
-
-/* Print */
-@media print {
-  .dclt-hero-block { min-height: auto; background: #fff !important; color: #000 !important; }
-  .dclt-hero-media, .dclt-hero-overlay, .dclt-hero-block svg { display: none !important; }
-  .dclt-hero-block a { border: 2px solid #000; background: #fff; color: #000; }
-}
-
-/* ------------------------------
-   Optional: prevent horizontal scroll from full-bleed
-   (If you already handle this globally, delete these lines)
------------------------------- */
-/* html, body { overflow-x: hidden; } */

@@ -64,7 +64,7 @@ if (!function_exists('dclt_get_button_class')) {
  * Block registration
  * ========================================================================== */
 function dclt_register_blocks() {
-    // Editor scripts
+    // Register editor scripts
     wp_register_script(
         'dclt-hero-block-editor',
         get_template_directory_uri() . '/blocks/hero/hero-editor.js',
@@ -76,12 +76,10 @@ function dclt_register_blocks() {
     wp_register_script(
         'dclt-stats-block-editor',
         get_template_directory_uri() . '/blocks/stats/stats-editor.js',
-        array('wp-blocks','wp-element','wp-editor','wp-components','wp-i18n'),
+        ['wp-blocks','wp-element','wp-editor','wp-components','wp-i18n'],
         '1.0.0',
         true
     );
-
-  
 
     wp_register_script(
         'dclt-cta-block-editor',
@@ -100,13 +98,13 @@ function dclt_register_blocks() {
         ],
     ]);
 
-      register_block_type('dclt/stats', array(
+    register_block_type('dclt/stats', [
         'editor_script'   => 'dclt-stats-block-editor',
         'render_callback' => 'dclt_render_stats_block',
-        'attributes'      => array(
-            'blockId' => array('type'=>'string','default'=>'')
-        )
-    ));
+        'attributes'      => [
+            'blockId' => ['type'=>'string','default'=>''],
+        ],
+    ]);
 
     register_block_type('dclt/cta', [
         'editor_script'   => 'dclt-cta-block-editor',
@@ -137,14 +135,19 @@ function dclt_render_hero_block($attributes, $content) {
     return '<section class="dclt-hero-block" style="padding:2rem;border:2px dashed #065f46;border-radius:12px">Missing hero.php</section>';
 }
 
-function dclt_render_stats_block($attributes, $content){
-  global $dclt_attributes;
-  $dclt_attributes = $attributes;
+function dclt_render_stats_block($attributes, $content) {
+    if (is_admin() && !wp_doing_ajax()) { return '<!-- dclt/stats: admin bypass -->'; }
 
-  ob_start();
-  $tpl = get_template_directory() . '/blocks/stats/stats.php';
-  if (file_exists($tpl)) include $tpl;
-  return ob_get_clean();
+    global $dclt_attributes;
+    $dclt_attributes = $attributes;
+
+    $template = get_template_directory() . '/blocks/stats/stats.php';
+    if (file_exists($template)) {
+        ob_start();
+        include $template;
+        return ob_get_clean();
+    }
+    return '<div class="dclt-error">Stats block template not found</div>';
 }
 
 function dclt_render_cta_block($attributes, $content) {
@@ -163,20 +166,31 @@ function dclt_render_cta_block($attributes, $content) {
 }
 
 /* ============================================================================
- * Meta boxes (include if present)
+ * Meta boxes (include files and register)
  * ========================================================================== */
+// Include meta box files
 $hero_meta = get_template_directory() . '/blocks/hero/hero-meta-box.php';
 if (file_exists($hero_meta)) { require_once $hero_meta; }
-$cta_meta  = get_template_directory() . '/blocks/cta/cta-meta-box.php';
-if (file_exists($cta_meta))  { require_once $cta_meta; }
 
-$stats_meta_box = get_template_directory() . '/blocks/stats/stats-meta-box.php';
-if (file_exists($stats_meta_box)) {
-  require_once $stats_meta_box;
+$stats_meta = get_template_directory() . '/blocks/stats/stats-meta-box.php';
+if (file_exists($stats_meta)) { require_once $stats_meta; }
+
+$cta_meta = get_template_directory() . '/blocks/cta/cta-meta-box.php';
+if (file_exists($cta_meta)) { require_once $cta_meta; }
+
+// Add meta box registration function for stats (missing from your original file)
+function dclt_add_stats_meta_box() {
+    add_meta_box(
+        'dclt_stats_settings',
+        'Stats Block Settings',
+        'dclt_stats_meta_box_callback',
+        ['page', 'post'],
+        'normal',
+        'high'
+    );
 }
-// After the require_once() lines:
 
-// Hook Hero meta box + save if those functions exist
+// Hook all meta boxes
 if (function_exists('dclt_add_hero_meta_box')) {
     add_action('add_meta_boxes', 'dclt_add_hero_meta_box');
 }
@@ -184,7 +198,13 @@ if (function_exists('dclt_save_hero_meta_box')) {
     add_action('save_post', 'dclt_save_hero_meta_box');
 }
 
-// Hook CTA meta box + save if those functions exist
+if (function_exists('dclt_add_stats_meta_box')) {
+    add_action('add_meta_boxes', 'dclt_add_stats_meta_box');
+}
+if (function_exists('dclt_save_stats_meta_box')) {
+    add_action('save_post', 'dclt_save_stats_meta_box');
+}
+
 if (function_exists('dclt_add_cta_meta_box')) {
     add_action('add_meta_boxes', 'dclt_add_cta_meta_box');
 }
@@ -192,7 +212,7 @@ if (function_exists('dclt_save_cta_meta_box')) {
     add_action('save_post', 'dclt_save_cta_meta_box');
 }
 
-// Needed if your meta boxes use the media library (image/video pickers)
+// Enqueue media library for meta boxes
 add_action('admin_enqueue_scripts', function ($hook) {
     if ($hook === 'post.php' || $hook === 'post-new.php') {
         wp_enqueue_media();
@@ -212,9 +232,8 @@ function dclt_enqueue_block_assets_conditionally() {
     $used = [];
     if (has_block('dclt/hero', $post)) { $used[] = 'hero'; }
     if (has_block('dclt/cta',  $post)) { $used[] = 'cta';  }
-    if (has_block('dclt/stats', $post)) {
-        $blocks_used[] = 'stats';
-    }
+    if (has_block('dclt/stats', $post)) { $used[] = 'stats';}
+    
     if (!empty($used)) {
         $shared_css = get_template_directory() . '/blocks/shared/blocks.css';
         if (file_exists($shared_css)) {
@@ -262,5 +281,3 @@ function dclt_add_brand_colors() {
     }</style>';
 }
 add_action('wp_head', 'dclt_add_brand_colors');
-
-

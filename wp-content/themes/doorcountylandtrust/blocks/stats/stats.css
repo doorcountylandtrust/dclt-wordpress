@@ -1,32 +1,382 @@
-/* DCLT Stats Block (MVP) */
-.dclt-stats-block { --brand-700:#065f46; }
-.dclt-stats-block .stats-head .kicker { color: var(--brand-700); }
+/*
+ * Door County Land Trust — Stats Block with Animated Icons
+ * Mission: Conservation impact with meaningful visual storytelling
+ */
 
-.dclt-stats-block .stats-grid{
-  display:grid;
-  grid-template-columns: repeat(3, minmax(0,1fr));
-  gap:1.75rem;
-}
-@media (max-width: 900px){
-  .dclt-stats-block .stats-grid{ grid-template-columns: 1fr; }
+.dclt-stats-block {
+  position: relative;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f0fdf4 100%);
+  overflow: hidden;
 }
 
-.dclt-stats-block .stat{
-  background: #f9fafb;
-  border-radius: 1rem;
-  padding: 1.5rem;
+/* Subtle background texture */
+.dclt-stats-block::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(5, 150, 105, 0.04) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(6, 95, 70, 0.03) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Container */
+.dclt-stats-block .container,
+.dclt-stats-block .max-w-6xl,
+.dclt-stats-block .max-w-7xl {
+  position: relative;
+  z-index: 10;
+}
+
+/* Section header styling */
+.dclt-stats-block .stats-kicker {
+  margin-bottom: 2rem;
+}
+
+.dclt-stats-block h2 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: #064e3b;
+  margin: 0 0 1rem 0;
+  background: linear-gradient(135deg, #064e3b 0%, #059669 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dclt-stats-block p {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: #374151;
+  max-width: 48rem;
+  margin: 0 auto 3rem auto;
+  line-height: 1.6;
+}
+
+/* Stats grid */
+.dclt-stats-block .stats-grid {
+  margin-top: 3rem;
+}
+
+/* Individual stat cards */
+.dclt-stats-block .stat-card {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(5, 150, 105, 0.1);
+  border-radius: 1.5rem;
+  padding: 2.5rem 1.5rem;
   text-align: center;
-  border: 1px solid #e5e7eb;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 4px 6px rgba(0, 0, 0, 0.05),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+  
+  /* Initial state for animation */
+  opacity: 0;
+  transform: translateY(30px);
 }
 
-.dclt-stats-block .stat-number{
-  font-weight: 900;
-  font-size: clamp(2rem, 5vw, 3.25rem);
-  line-height: 1.1;
-  color:#111827;
+.dclt-stats-block .stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 
+    0 12px 24px rgba(5, 150, 105, 0.15),
+    0 4px 8px rgba(0, 0, 0, 0.1);
+  border-color: rgba(5, 150, 105, 0.2);
 }
-.dclt-stats-block .stat-label{
-  margin-top:.5rem;
-  color:#374151;
-  font-size:1rem;
+
+/* Card top accent */
+.dclt-stats-block .stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #059669 0%, #065f46 100%);
+  border-radius: 1.5rem 1.5rem 0 0;
+}
+
+/* Animation states */
+.dclt-stats-block[data-animated] .stat-card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Icon container */
+.dclt-stats-block .stat-icon-container {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 1.5rem;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dclt-stats-block[data-animated] .stat-icon-container {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* SVG base styling */
+.dclt-stats-block .stat-svg {
+  width: 100%;
+  height: 100%;
+  color: #059669;
+}
+
+/* Numbers */
+.dclt-stats-block .stat-value {
+  font-size: clamp(3rem, 6vw, 5rem);
+  font-weight: 900;
+  line-height: 0.9;
+  color: #064e3b;
+  margin-bottom: 0.75rem;
+  font-variant-numeric: tabular-nums lining-nums;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Initial state */
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.6s ease-out;
+}
+
+.dclt-stats-block[data-animated] .stat-value {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.4s;
+}
+
+/* Suffixes */
+.dclt-stats-block .stat-suffix {
+  font-size: 0.3em;
+  font-weight: 700;
+  color: #059669;
+  vertical-align: middle;
+  margin-left: 0.3em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Labels */
+.dclt-stats-block .stat-label {
+  font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  line-height: 1.3;
+  margin-top: 0.5rem;
+  
+  /* Initial state */
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.4s ease-out;
+}
+
+.dclt-stats-block[data-animated] .stat-label {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.7s;
+}
+
+/* ========================================
+   SVG ANIMATIONS - Customize these for your icons
+======================================== */
+
+/* Tree Icon Animations */
+.tree-icon .animate-trunk {
+  fill: #8b5a3c;
+  transform-origin: center bottom;
+  transform: scaleY(0);
+  animation: growTrunk 0.6s ease-out forwards;
+}
+
+.tree-icon .animate-leaves {
+  fill: #059669;
+  transform-origin: center bottom;
+  transform: scale(0);
+  animation: growLeaves 0.4s ease-out 0.6s forwards;
+}
+
+@keyframes growTrunk {
+  to { transform: scaleY(1); }
+}
+
+@keyframes growLeaves {
+  to { transform: scale(1); }
+}
+
+/* Handshake Icon Animations */
+.handshake-icon .animate-hand-left {
+  fill: #059669;
+  transform-origin: right center;
+  transform: translateX(-20px);
+  animation: slideHandLeft 0.5s ease-out 0.2s forwards;
+}
+
+.handshake-icon .animate-hand-right {
+  fill: #065f46;
+  transform-origin: left center;
+  transform: translateX(20px);
+  animation: slideHandRight 0.5s ease-out 0.4s forwards;
+}
+
+.handshake-icon .animate-connection {
+  fill: #fbbf24;
+  opacity: 0;
+  animation: showConnection 0.3s ease-out 0.8s forwards;
+}
+
+@keyframes slideHandLeft {
+  to { transform: translateX(0); }
+}
+
+@keyframes slideHandRight {
+  to { transform: translateX(0); }
+}
+
+@keyframes showConnection {
+  to { opacity: 1; }
+}
+
+/* Landscape Icon Animations */
+.landscape-icon .animate-mountain {
+  fill: #065f46;
+  transform-origin: center bottom;
+  transform: scaleY(0);
+  animation: riseUp 0.7s ease-out forwards;
+}
+
+.landscape-icon .animate-water {
+  fill: #0891b2;
+  opacity: 0;
+  animation: flowIn 0.5s ease-out 0.7s forwards;
+}
+
+.landscape-icon .animate-tree-small {
+  fill: #059669;
+  opacity: 0;
+  animation: fadeIn 0.3s ease-out 1s forwards;
+}
+
+@keyframes riseUp {
+  to { transform: scaleY(1); }
+}
+
+@keyframes flowIn {
+  to { opacity: 1; }
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+
+/* Bird Icon Animations */
+.bird-icon .animate-path {
+  stroke: #0891b2;
+  stroke-dasharray: 200;
+  stroke-dashoffset: 200;
+  animation: drawPath 1s ease-out forwards;
+}
+
+.bird-icon .animate-bird {
+  fill: #0891b2;
+  opacity: 0;
+  animation: flyIn 0.5s ease-out 0.8s forwards;
+}
+
+@keyframes drawPath {
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes flyIn {
+  to { opacity: 1; }
+}
+
+/* Default Icon Animations */
+.default-icon .animate-pulse {
+  fill: #059669;
+  opacity: 0.3;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.default-icon .animate-inner {
+  fill: #065f46;
+  transform: scale(0);
+  animation: expandInner 0.6s ease-out 0.3s forwards;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+@keyframes expandInner {
+  to { transform: scale(1); }
+}
+
+/* ========================================
+   RESPONSIVE & ACCESSIBILITY
+======================================== */
+
+/* Mobile adjustments */
+@media (max-width: 640px) {
+  .dclt-stats-block .stat-card {
+    padding: 2rem 1rem;
+  }
+  
+  .dclt-stats-block .stat-icon-container {
+    width: 60px;
+    height: 60px;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .dclt-stats-block {
+    background: white;
+  }
+  
+  .dclt-stats-block .stat-card {
+    border: 2px solid #000;
+    background: white;
+  }
+  
+  .dclt-stats-block .stat-svg {
+    color: #000;
+  }
+  
+  .dclt-stats-block .stat-value {
+    color: #000;
+    background: none;
+    -webkit-text-fill-color: #000;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .dclt-stats-block .stat-card,
+  .dclt-stats-block .stat-icon-container,
+  .dclt-stats-block .stat-value,
+  .dclt-stats-block .stat-label {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  
+  .dclt-stats-block .stat-card:hover {
+    transform: none !important;
+  }
+  
+  /* Disable all SVG animations */
+  .dclt-stats-block .stat-svg * {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
