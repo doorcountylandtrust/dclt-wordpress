@@ -1,660 +1,210 @@
 <?php
 /**
  * Feature Grid Block Template
- * File: blocks/feature-grid/feature-grid.php
+ * Location: blocks/feature-grid/feature-grid.php
+ * Rewritten to match stats block structure exactly
  */
 
-// Get field values
-$section_title = get_field('section_title');
-$section_subtitle = get_field('section_subtitle');
-$grid_columns = get_field('grid_columns') ?: '3';
-$features = get_field('features');
-$background_color = get_field('background_color');
-$container_width = get_field('container_width') ?: 'content';
-$spacing = get_field('spacing') ?: 'medium';
+if (!defined('ABSPATH')) exit;
 
-if (!$features) return;
+$post_id = get_the_ID();
 
-// Build classes
-$section_classes = ['dclt-feature-grid-block', 'dclt-block', dclt_get_spacing_class($spacing)];
-if ($background_color && $background_color !== '#ffffff') {
-    $section_classes[] = 'text-white';
+// Content fields
+$title = dclt_get_field($post_id, 'feature_grid_title', '');
+$subtitle = dclt_get_field($post_id, 'feature_grid_subtitle', '');
+
+// Layout options
+$columns = dclt_get_field($post_id, 'feature_grid_columns', '', '3');
+$container = dclt_get_container_class(dclt_get_field($post_id, 'feature_grid_container', '', 'content'));
+$spacing = dclt_get_spacing_class(dclt_get_field($post_id, 'feature_grid_spacing', '', 'medium'));
+
+// Get feature items (2-6 items)
+$items = [];
+for ($i = 1; $i <= 6; $i++) {
+    $heading = dclt_get_field($post_id, "feature_grid_item{$i}_heading", '');
+    $description = dclt_get_field($post_id, "feature_grid_item{$i}_description", '');
+    $cta_text = dclt_get_field($post_id, "feature_grid_item{$i}_cta_text", '');
+    $cta_url = dclt_get_field($post_id, "feature_grid_item{$i}_cta_url", '');
+    $icon = dclt_get_field($post_id, "feature_grid_item{$i}_icon", '', 'default');
+
+    // Only add if heading or description exists
+    if (!empty($heading) || !empty($description)) {
+        $items[] = [
+            'heading' => $heading,
+            'description' => $description,
+            'cta_text' => $cta_text,
+            'cta_url' => $cta_url,
+            'icon' => $icon
+        ];
+    }
 }
 
+// Use sample data if no items exist
+if (empty($items)) {
+    $items = [
+        [
+            'heading' => 'Land Protection',
+            'description' => 'Working with landowners to permanently protect important natural areas through conservation easements.',
+            'cta_text' => 'Learn More',
+            'cta_url' => '/protect-your-land',
+            'icon' => 'shield'
+        ],
+        [
+            'heading' => 'Restoration',
+            'description' => 'Restoring native habitats and removing invasive species to enhance ecological health.',
+            'cta_text' => 'Get Involved',
+            'cta_url' => '/restoration',
+            'icon' => 'leaf'
+        ],
+        [
+            'heading' => 'Education',
+            'description' => 'Teaching community members about local ecology and conservation practices.',
+            'cta_text' => 'Explore Programs',
+            'cta_url' => '/education',
+            'icon' => 'bird'
+        ]
+    ];
+
+    if (empty($title)) $title = 'Our Conservation Work';
+    if (empty($subtitle)) $subtitle = 'Protecting Door County\'s natural heritage for future generations';
+}
+
+// Function to render SVG icons - EXACT copy from stats block
+if (!function_exists('dclt_render_feature_icon')) {
+    function dclt_render_feature_icon($icon_type, $custom_svg = '') {
+        // If custom SVG provided, use it
+        if (!empty($custom_svg)) {
+            // Ensure the SVG has proper classes for styling
+            if (strpos($custom_svg, 'class="') === false) {
+                $custom_svg = str_replace('<svg', '<svg class="stat-svg custom-icon"', $custom_svg);
+            }
+            return $custom_svg;
+        }
+
+        // Otherwise use preset icons
+        $icons = [
+            'tree' => '<svg viewBox="0 0 100 100" class="stat-svg tree-icon">
+                <rect class="tree-trunk animate-trunk" x="45" y="65" width="10" height="25" fill="currentColor" opacity="0.7" />
+                <circle class="tree-leaves animate-leaves" cx="50" cy="45" r="20" fill="currentColor" />
+            </svg>',
+
+            'handshake' => '<svg viewBox="0 0 100 100" class="stat-svg handshake-icon">
+                <path class="hand-left animate-hand-left" d="M20 50 Q35 35 45 50 L48 55 Q43 65 30 60 Q20 65 15 50 Z" fill="currentColor" />
+                <path class="hand-right animate-hand-right" d="M52 45 Q57 35 72 45 Q80 50 75 60 Q65 70 52 65 L48 55 Q52 45 52 45 Z" fill="currentColor" opacity="0.8" />
+                <circle class="connection animate-connection" cx="50" cy="52" r="4" fill="#fbbf24" />
+            </svg>',
+
+            'landscape' => '<svg viewBox="0 0 100 100" class="stat-svg landscape-icon">
+                <polygon class="mountain animate-mountain" points="25,75 50,25 75,75" fill="currentColor" />
+                <ellipse class="water animate-water" cx="50" cy="80" rx="25" ry="6" fill="currentColor" opacity="0.6" />
+                <path class="tree-small animate-tree-small" d="M65 65 L67 65 L66 60 Z" fill="currentColor" opacity="0.8" />
+            </svg>',
+
+            'bird' => '<svg viewBox="0 0 100 100" class="stat-svg bird-icon">
+                <path class="flight-path animate-path" d="M15 60 Q50 25 85 45" stroke="currentColor" stroke-width="3" fill="none" opacity="0.7" />
+                <path class="bird-silhouette animate-bird" d="M80 40 L88 43 L86 47 L80 45 L82 49 L78 47 Z" fill="currentColor" />
+            </svg>',
+
+            'shield' => '<svg viewBox="0 0 100 100" class="stat-svg shield-icon">
+                <path class="shield-shape animate-shield" d="M50 15 L70 25 L70 55 Q70 75 50 85 Q30 75 30 55 L30 25 Z" fill="currentColor" />
+                <path class="checkmark animate-checkmark" d="M42 45 L48 52 L62 35" stroke="white" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>',
+
+            'leaf' => '<svg viewBox="0 0 100 100" class="stat-svg leaf-icon">
+                <path class="leaf-shape animate-leaf" d="M50 15 Q35 30 40 50 Q45 70 50 85 Q55 70 60 50 Q65 30 50 15 Z" fill="currentColor" />
+                <path class="leaf-vein animate-vein" d="M50 25 Q52 45 50 65" stroke="white" stroke-width="2" opacity="0.7" />
+            </svg>',
+
+            'default' => '<svg viewBox="0 0 100 100" class="stat-svg default-icon">
+                <circle class="pulse-circle animate-pulse" cx="50" cy="50" r="20" fill="currentColor" opacity="0.3" />
+                <circle class="inner-circle animate-inner" cx="50" cy="50" r="12" fill="currentColor" />
+            </svg>'
+        ];
+
+        return isset($icons[$icon_type]) ? $icons[$icon_type] : $icons['default'];
+    }
+}
+
+// Grid class mapping
 $grid_classes = [
-    'grid', 
-    'gap-8', 
-    'md:gap-12',
-    "md:grid-cols-{$grid_columns}"
+    '2' => 'grid-cols-1 md:grid-cols-2',
+    '3' => 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3',
+    '4' => 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4',
 ];
+$grid_class = isset($grid_classes[$columns]) ? $grid_classes[$columns] : $grid_classes['3'];
 ?>
 
-<section class="<?php echo implode(' ', $section_classes); ?>" 
-         <?php if ($background_color): ?>style="background-color: <?php echo esc_attr($background_color); ?>"<?php endif; ?>>
-    
-    <div class="<?php echo dclt_get_container_class($container_width); ?>">
-        
-        <!-- Section Header -->
-        <?php if ($section_title || $section_subtitle): ?>
-            <div class="text-center mb-12 lg:mb-16">
-                <?php if ($section_title): ?>
-                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-                        <?php echo wp_kses_post($section_title); ?>
-                    </h2>
-                <?php endif; ?>
-                
-                <?php if ($section_subtitle): ?>
-                    <p class="text-xl md:text-2xl opacity-90 max-w-3xl mx-auto">
-                        <?php echo wp_kses_post($section_subtitle); ?>
+<section class="dclt-feature-grid-block bg-white <?php echo esc_attr($spacing); ?>">
+    <div class="<?php echo esc_attr($container); ?>">
+
+        <?php if (!empty($title)) : ?>
+            <div class="text-center mb-8">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-neutral-900 tracking-tight mb-4">
+                    <?php echo esc_html($title); ?>
+                </h2>
+                <?php if (!empty($subtitle)) : ?>
+                    <p class="text-lg text-neutral-700 max-w-3xl mx-auto">
+                        <?php echo esc_html($subtitle); ?>
                     </p>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
 
-        <!-- Feature Grid -->
-        <div class="<?php echo implode(' ', $grid_classes); ?>">
-            <?php foreach ($features as $index => $feature): ?>
-                <div class="feature-item text-center group" data-aos="fade-up" data-aos-delay="<?php echo $index * 100; ?>">
-                    
-                    <!-- Icon/Image -->
-                    <?php if ($feature['icon']): ?>
-                        <div class="mb-6 flex justify-center">
-                            <?php if ($feature['icon_style'] === 'number'): ?>
-                                <div class="w-16 h-16 rounded-full bg-brand text-white flex items-center justify-center text-2xl font-bold group-hover:scale-110 transition-transform duration-200">
-                                    <?php echo esc_html($index + 1); ?>
-                                </div>
-                            <?php else: ?>
-                                <div class="w-16 h-16 flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                                    <img src="<?php echo esc_url($feature['icon']['sizes']['thumbnail'] ?? $feature['icon']['url']); ?>" 
-                                         alt="<?php echo esc_attr($feature['icon']['alt'] ?? ''); ?>"
-                                         class="w-full h-full object-contain">
-                                </div>
-                            <?php endif; ?>
-                        </div>
-                    <?php endif; ?>
+        <div class="feature-grid grid <?php echo esc_attr($grid_class); ?> gap-6 lg:gap-8">
+            <?php foreach ($items as $index => $item) : ?>
+                <div class="feature-card group bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-6 text-center transition-all duration-300 hover:shadow-md hover:ring-gray-300">
 
-                    <!-- Title -->
-                    <?php if ($feature['title']): ?>
-                        <h3 class="text-xl md:text-2xl font-bold mb-4">
-                            <?php echo wp_kses_post($feature['title']); ?>
-                        </h3>
-                    <?php endif; ?>
+                    <!-- Icon - EXACT structure from stats block -->
+                    <div class="stat-icon-container mb-4">
+                        <?php echo dclt_render_feature_icon($item['icon'] ?? 'default', ''); ?>
+                    </div>
 
-                    <!-- Description -->
-                    <?php if ($feature['description']): ?>
-                        <p class="text-lg opacity-90 mb-6 leading-relaxed">
-                            <?php echo wp_kses_post($feature['description']); ?>
-                        </p>
-                    <?php endif; ?>
+                    <!-- Content -->
+                    <div class="feature-content">
+                        <?php if (!empty($item['heading'])) : ?>
+                            <h3 class="text-xl font-bold text-neutral-900 mb-3 group-hover:text-brand-700 transition-colors duration-200">
+                                <?php echo esc_html($item['heading']); ?>
+                            </h3>
+                        <?php endif; ?>
 
-                    <!-- Link -->
-                    <?php if ($feature['link_url'] && $feature['link_text']): ?>
-                        <a href="<?php echo esc_url($feature['link_url']); ?>" 
-                           class="inline-flex items-center text-brand font-semibold hover:text-brand-700 transition-colors duration-200">
-                            <?php echo esc_html($feature['link_text']); ?>
-                            <svg class="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform duration-200" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                            </svg>
-                        </a>
-                    <?php endif; ?>
+                        <?php if (!empty($item['description'])) : ?>
+                            <p class="text-neutral-700 mb-4 leading-relaxed">
+                                <?php echo esc_html($item['description']); ?>
+                            </p>
+                        <?php endif; ?>
 
+                        <!-- CTA Link - simplified -->
+                        <?php if (!empty($item['cta_text']) && !empty($item['cta_url'])) : ?>
+                            <a href="<?php echo esc_url($item['cta_url']); ?>"
+                               class="inline-block text-brand-700 font-semibold hover:text-brand-800 transition-colors duration-200">
+                                <?php echo esc_html($item['cta_text']); ?> →
+                            </a>
+                        <?php endif; ?>
+                    </div>
                 </div>
             <?php endforeach; ?>
         </div>
 
-    </div>
-</section>
-
-<?php
-/**
- * Stats Block Template  
- * File: blocks/stats/stats.php
- */
-
-// Get field values
-$layout = get_field('layout') ?: 'grid';
-$background_type = get_field('background_type') ?: 'transparent';
-$background_image = get_field('background_image');
-$stats = get_field('stats');
-$counter_animation = get_field('counter_animation');
-$section_title = get_field('section_title');
-$container_width = get_field('container_width') ?: 'content';
-$spacing = get_field('spacing') ?: 'medium';
-
-if (!$stats) return;
-
-// Build classes
-$section_classes = ['dclt-stats-block', 'dclt-block', dclt_get_spacing_class($spacing), 'relative'];
-
-switch ($background_type) {
-    case 'brand':
-        $section_classes[] = 'bg-brand text-white';
-        break;
-    case 'image':
-        $section_classes[] = 'text-white';
-        break;
-    case 'light':
-        $section_classes[] = 'bg-gray-50';
-        break;
-}
-
-// Grid layout classes
-if ($layout === 'horizontal') {
-    $grid_classes = 'flex flex-wrap justify-center gap-8 md:gap-16';
-} elseif ($layout === 'featured-large') {
-    $grid_classes = 'grid md:grid-cols-2 lg:grid-cols-4 gap-8 text-center';
-} else {
-    $grid_classes = 'grid grid-cols-2 lg:grid-cols-4 gap-8 text-center';
-}
-?>
-
-<section class="<?php echo implode(' ', $section_classes); ?>">
-    
-    <!-- Background Image -->
-    <?php if ($background_type === 'image' && $background_image): ?>
-        <div class="absolute inset-0">
-            <img src="<?php echo esc_url($background_image['sizes']['large'] ?? $background_image['url']); ?>" 
-                 alt="<?php echo esc_attr($background_image['alt'] ?? ''); ?>"
-                 class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-black/60"></div>
+        <!-- Debug output (admin only) -->
+        <?php if (current_user_can('manage_options')) : ?>
+        <div style="background: #f0f0f0; padding: 1rem; margin-top: 2rem; font-size: 12px; border: 1px solid #ccc;">
+            <strong>Debug Info (admin only):</strong><br>
+            Post ID: <?php echo $post_id; ?><br>
+            Title: "<?php echo esc_html($title); ?>"<br>
+            Columns: <?php echo esc_html($columns); ?><br>
+            Items: <?php echo count($items); ?><br>
+            Container: <?php echo esc_html(dclt_get_field($post_id, 'feature_grid_container', '', 'content')); ?><br>
+            Spacing: <?php echo esc_html(dclt_get_field($post_id, 'feature_grid_spacing', '', 'medium')); ?><br>
+            <strong>Item 1 Debug:</strong><br>
+            - Heading: "<?php echo esc_html($items[0]['heading'] ?? 'none'); ?>"<br>
+            - Icon: "<?php echo esc_html($items[0]['icon'] ?? 'none'); ?>"<br>
+            - CTA Text: "<?php echo esc_html($items[0]['cta_text'] ?? 'none'); ?>"<br>
+            - CTA URL: "<?php echo esc_html($items[0]['cta_url'] ?? 'none'); ?>"<br>
+            <strong>Raw Meta Fields:</strong><br>
+            - dclt_feature_grid_item1_heading: "<?php echo esc_html(get_post_meta($post_id, 'dclt_feature_grid_item1_heading', true)); ?>"<br>
+            - dclt_feature_grid_item1_icon: "<?php echo esc_html(get_post_meta($post_id, 'dclt_feature_grid_item1_icon', true)); ?>"<br>
         </div>
-    <?php endif; ?>
-
-    <div class="<?php echo dclt_get_container_class($container_width); ?> relative z-10">
-        
-        <!-- Section Title -->
-        <?php if ($section_title): ?>
-            <div class="text-center mb-12">
-                <h2 class="text-3xl md:text-4xl font-bold">
-                    <?php echo wp_kses_post($section_title); ?>
-                </h2>
-            </div>
         <?php endif; ?>
 
-        <!-- Stats Grid -->
-        <div class="<?php echo $grid_classes; ?>">
-            <?php foreach ($stats as $index => $stat): ?>
-                <div class="stat-item" data-aos="fade-up" data-aos-delay="<?php echo $index * 100; ?>">
-                    
-                    <!-- Icon -->
-                    <?php if ($stat['icon'] && $stat['icon'] !== 'custom'): ?>
-                        <div class="mb-4 flex justify-center">
-                            <?php echo dclt_get_stat_icon($stat['icon']); ?>
-                        </div>
-                    <?php elseif ($stat['custom_icon']): ?>
-                        <div class="mb-4 flex justify-center">
-                            <img src="<?php echo esc_url($stat['custom_icon']['sizes']['thumbnail'] ?? $stat['custom_icon']['url']); ?>" 
-                                 alt="<?php echo esc_attr($stat['custom_icon']['alt'] ?? ''); ?>"
-                                 class="w-12 h-12 object-contain">
-                        </div>
-                    <?php endif; ?>
-
-                    <!-- Number -->
-                    <?php if ($stat['number']): ?>
-                        <div class="<?php echo $stat['emphasis'] ? 'text-5xl md:text-6xl' : 'text-4xl md:text-5xl'; ?> font-bold mb-2 <?php echo $counter_animation ? 'counter-number' : ''; ?>"
-                             <?php if ($counter_animation): ?>data-target="<?php echo esc_attr(preg_replace('/[^0-9]/', '', $stat['number'])); ?>"<?php endif; ?>>
-                            <?php echo $counter_animation ? '0' : wp_kses_post($stat['number']); ?>
-                        </div>
-                    <?php endif; ?>
-
-                    <!-- Label -->
-                    <?php if ($stat['label']): ?>
-                        <div class="text-lg md:text-xl font-semibold opacity-90">
-                            <?php echo wp_kses_post($stat['label']); ?>
-                        </div>
-                    <?php endif; ?>
-
-                </div>
-            <?php endforeach; ?>
-        </div>
-
     </div>
 </section>
-
-<?php
-/**
- * Helper function to get stat icons
- */
-function dclt_get_stat_icon($icon_type) {
-    $icons = [
-        'acres' => '<svg class="w-12 h-12 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                    </svg>',
-        'species' => '<svg class="w-12 h-12 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/>
-                      </svg>',
-        'volunteers' => '<svg class="w-12 h-12 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                           <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
-                         </svg>',
-        'donations' => '<svg class="w-12 h-12 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"/>
-                        </svg>',
-    ];
-    
-    return isset($icons[$icon_type]) ? $icons[$icon_type] : '';
-}
-
-/**
- * ACF Fields for Feature Grid Block
- */
-if (function_exists('acf_add_local_field_group')) {
-    
-    acf_add_local_field_group([
-        'key' => 'group_dclt_feature_grid_block',
-        'title' => 'DCLT Feature Grid Block Settings',
-        'fields' => [
-            
-            // Header Tab
-            [
-                'key' => 'field_feature_header_tab',
-                'label' => 'Section Header',
-                'name' => '',
-                'type' => 'tab',
-            ],
-            
-            [
-                'key' => 'field_feature_section_title',
-                'label' => 'Section Title',
-                'name' => 'section_title',
-                'type' => 'text',
-                'instructions' => 'Optional title for the entire feature section.',
-            ],
-            
-            [
-                'key' => 'field_feature_section_subtitle',
-                'label' => 'Section Subtitle',
-                'name' => 'section_subtitle',
-                'type' => 'textarea',
-                'instructions' => 'Optional subtitle or description for the section.',
-                'rows' => 2,
-            ],
-            
-            // Layout Tab
-            [
-                'key' => 'field_feature_layout_tab',
-                'label' => 'Layout Settings',
-                'name' => '',
-                'type' => 'tab',
-            ],
-            
-            [
-                'key' => 'field_feature_grid_columns',
-                'label' => 'Grid Columns',
-                'name' => 'grid_columns',
-                'type' => 'select',
-                'choices' => [
-                    '2' => '2 Columns',
-                    '3' => '3 Columns',
-                    '4' => '4 Columns',
-                ],
-                'default_value' => '3',
-                'required' => 1,
-            ],
-            
-            [
-                'key' => 'field_feature_background_color',
-                'label' => 'Background Color',
-                'name' => 'background_color',
-                'type' => 'color_picker',
-                'instructions' => 'Optional background color for the section.',
-                'default_value' => '',
-            ],
-            
-            [
-                'key' => 'field_feature_container_width',
-                'label' => 'Container Width',
-                'name' => 'container_width',
-                'type' => 'select',
-                'choices' => [
-                    'narrow' => 'Narrow',
-                    'content' => 'Content',
-                    'wide' => 'Wide',
-                ],
-                'default_value' => 'content',
-            ],
-            
-            [
-                'key' => 'field_feature_spacing',
-                'label' => 'Section Spacing',
-                'name' => 'spacing',
-                'type' => 'select',
-                'choices' => [
-                    'small' => 'Small',
-                    'medium' => 'Medium',
-                    'large' => 'Large',
-                ],
-                'default_value' => 'medium',
-            ],
-            
-            // Features Tab
-            [
-                'key' => 'field_feature_content_tab',
-                'label' => 'Features',
-                'name' => '',
-                'type' => 'tab',
-            ],
-            
-            [
-                'key' => 'field_features',
-                'label' => 'Features',
-                'name' => 'features',
-                'type' => 'repeater',
-                'instructions' => 'Add your features, services, or benefits.',
-                'required' => 1,
-                'min' => 1,
-                'max' => 12,
-                'layout' => 'block',
-                'button_label' => 'Add Feature',
-                'sub_fields' => [
-                    [
-                        'key' => 'field_feature_icon',
-                        'label' => 'Icon',
-                        'name' => 'icon',
-                        'type' => 'image',
-                        'instructions' => 'Icon or image for this feature.',
-                        'return_format' => 'array',
-                    ],
-                    [
-                        'key' => 'field_feature_icon_style',
-                        'label' => 'Icon Style',
-                        'name' => 'icon_style',
-                        'type' => 'select',
-                        'choices' => [
-                            'image' => 'Custom Image/Icon',
-                            'number' => 'Step Number (for processes)',
-                        ],
-                        'default_value' => 'image',
-                    ],
-                    [
-                        'key' => 'field_feature_title',
-                        'label' => 'Title',
-                        'name' => 'title',
-                        'type' => 'text',
-                        'required' => 1,
-                        'maxlength' => 50,
-                    ],
-                    [
-                        'key' => 'field_feature_description',
-                        'label' => 'Description',
-                        'name' => 'description',
-                        'type' => 'textarea',
-                        'required' => 1,
-                        'rows' => 3,
-                        'maxlength' => 200,
-                    ],
-                    [
-                        'key' => 'field_feature_link_url',
-                        'label' => 'Link URL',
-                        'name' => 'link_url',
-                        'type' => 'url',
-                        'instructions' => 'Optional link for this feature.',
-                    ],
-                    [
-                        'key' => 'field_feature_link_text',
-                        'label' => 'Link Text',
-                        'name' => 'link_text',
-                        'type' => 'text',
-                        'instructions' => 'Text for the link (e.g., "Learn More").',
-                        'maxlength' => 20,
-                    ],
-                ],
-            ],
-        ],
-        'location' => [
-            [
-                [
-                    'param' => 'block',
-                    'operator' => '==',
-                    'value' => 'acf/dclt-feature-grid',
-                ],
-            ],
-        ],
-    ]);
-
-    /**
-     * ACF Fields for Stats Block
-     */
-    acf_add_local_field_group([
-        'key' => 'group_dclt_stats_block',
-        'title' => 'DCLT Stats Block Settings',
-        'fields' => [
-            
-            // Layout Tab
-            [
-                'key' => 'field_stats_layout_tab',
-                'label' => 'Layout & Style',
-                'name' => '',
-                'type' => 'tab',
-            ],
-            
-            [
-                'key' => 'field_stats_section_title',
-                'label' => 'Section Title',
-                'name' => 'section_title',
-                'type' => 'text',
-                'instructions' => 'Optional title above the statistics.',
-            ],
-            
-            [
-                'key' => 'field_stats_layout',
-                'label' => 'Layout Style',
-                'name' => 'layout',
-                'type' => 'select',
-                'choices' => [
-                    'grid' => 'Grid - Even columns',
-                    'horizontal' => 'Horizontal - Inline row',
-                    'featured-large' => 'Featured - One large stat highlighted',
-                ],
-                'default_value' => 'grid',
-                'required' => 1,
-            ],
-            
-            [
-                'key' => 'field_stats_background_type',
-                'label' => 'Background Type',
-                'name' => 'background_type',
-                'type' => 'select',
-                'choices' => [
-                    'transparent' => 'Transparent',
-                    'brand' => 'Brand Green',
-                    'light' => 'Light Gray',
-                    'image' => 'Background Image',
-                ],
-                'default_value' => 'transparent',
-                'required' => 1,
-            ],
-            
-            [
-                'key' => 'field_stats_background_image',
-                'label' => 'Background Image',
-                'name' => 'background_image',
-                'type' => 'image',
-                'instructions' => 'Background image for the stats section.',
-                'return_format' => 'array',
-                'conditional_logic' => [
-                    [
-                        [
-                            'field' => 'field_stats_background_type',
-                            'operator' => '==',
-                            'value' => 'image',
-                        ],
-                    ],
-                ],
-            ],
-            
-            [
-                'key' => 'field_stats_counter_animation',
-                'label' => 'Counter Animation',
-                'name' => 'counter_animation',
-                'type' => 'true_false',
-                'instructions' => 'Animate numbers counting up when they come into view.',
-                'default_value' => 1,
-                'ui' => 1,
-            ],
-            
-            [
-                'key' => 'field_stats_container_width',
-                'label' => 'Container Width',
-                'name' => 'container_width',
-                'type' => 'select',
-                'choices' => [
-                    'narrow' => 'Narrow',
-                    'content' => 'Content',
-                    'wide' => 'Wide',
-                ],
-                'default_value' => 'content',
-            ],
-            
-            [
-                'key' => 'field_stats_spacing',
-                'label' => 'Section Spacing',
-                'name' => 'spacing',
-                'type' => 'select',
-                'choices' => [
-                    'small' => 'Small',
-                    'medium' => 'Medium',
-                    'large' => 'Large',
-                ],
-                'default_value' => 'medium',
-            ],
-            
-            // Stats Tab
-            [
-                'key' => 'field_stats_content_tab',
-                'label' => 'Statistics',
-                'name' => '',
-                'type' => 'tab',
-            ],
-            
-            [
-                'key' => 'field_stats',
-                'label' => 'Statistics',
-                'name' => 'stats',
-                'type' => 'repeater',
-                'instructions' => 'Add your impact statistics and key numbers.',
-                'required' => 1,
-                'min' => 1,
-                'max' => 6,
-                'layout' => 'block',
-                'button_label' => 'Add Statistic',
-                'sub_fields' => [
-                    [
-                        'key' => 'field_stat_number',
-                        'label' => 'Number',
-                        'name' => 'number',
-                        'type' => 'text',
-                        'instructions' => 'The statistic number (e.g., "2,847", "95%", "24").',
-                        'required' => 1,
-                        'maxlength' => 20,
-                    ],
-                    [
-                        'key' => 'field_stat_label',
-                        'label' => 'Label',
-                        'name' => 'label',
-                        'type' => 'text',
-                        'instructions' => 'Description of what the number represents.',
-                        'required' => 1,
-                        'maxlength' => 50,
-                    ],
-                    [
-                        'key' => 'field_stat_icon',
-                        'label' => 'Icon',
-                        'name' => 'icon',
-                        'type' => 'select',
-                        'choices' => [
-                            'acres' => 'Acres/Land',
-                            'species' => 'Species/Wildlife',
-                            'volunteers' => 'Volunteers/People',
-                            'donations' => 'Donations/Support',
-                            'custom' => 'Custom Icon',
-                        ],
-                        'default_value' => 'acres',
-                    ],
-                    [
-                        'key' => 'field_stat_custom_icon',
-                        'label' => 'Custom Icon',
-                        'name' => 'custom_icon',
-                        'type' => 'image',
-                        'instructions' => 'Upload a custom icon for this statistic.',
-                        'return_format' => 'array',
-                        'conditional_logic' => [
-                            [
-                                [
-                                    'field' => 'field_stat_icon',
-                                    'operator' => '==',
-                                    'value' => 'custom',
-                                ],
-                            ],
-                        ],
-                    ],
-                    [
-                        'key' => 'field_stat_emphasis',
-                        'label' => 'Emphasize This Stat',
-                        'name' => 'emphasis',
-                        'type' => 'true_false',
-                        'instructions' => 'Make this statistic larger and more prominent.',
-                        'default_value' => 0,
-                        'ui' => 1,
-                    ],
-                ],
-            ],
-        ],
-        'location' => [
-            [
-                [
-                    'param' => 'block',
-                    'operator' => '==',
-                    'value' => 'acf/dclt-stats',
-                ],
-            ],
-        ],
-    ]);
-}
-?>
-
-<script>
-/**
- * Stats Block JavaScript
- * File: blocks/stats/stats.js
- */
-document.addEventListener('DOMContentLoaded', function() {
-    // Counter animation for stats
-    const counters = document.querySelectorAll('.counter-number');
-    const observerOptions = {
-        threshold: 0.5,
-        rootMargin: '0px 0px -100px 0px'
-    };
-    
-    const animateCounter = (counter) => {
-        const target = parseInt(counter.dataset.target);
-        const duration = 2000; // 2 seconds
-        const step = target / (duration / 16); // 60fps
-        let current = 0;
-        
-        const updateCounter = () => {
-            current += step;
-            if (current < target) {
-                counter.textContent = Math.floor(current).toLocaleString();
-                requestAnimationFrame(updateCounter);
-            } else {
-                counter.textContent = target.toLocaleString();
-            }
-        };
-        
-        updateCounter();
-    };
-    
-    const counterObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting && !entry.target.classList.contains('counted')) {
-                entry.target.classList.add('counted');
-                animateCounter(entry.target);
-            }
-        });
-    }, observerOptions);
-    
-    counters.forEach(counter => {
-        counterObserver.observe(counter);
-    });
-});
-</script>

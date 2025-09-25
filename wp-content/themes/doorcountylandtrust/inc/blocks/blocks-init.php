@@ -89,6 +89,14 @@ function dclt_register_blocks() {
         true
     );
 
+    wp_register_script(
+        'dclt-feature-grid-block-editor',
+        get_template_directory_uri() . '/blocks/feature-grid/feature-grid-editor.js',
+        ['wp-blocks','wp-element','wp-editor','wp-components','wp-i18n'],
+        '1.0.0',
+        true
+    );
+
     // Register blocks (server-rendered)
     register_block_type('dclt/hero', [
         'editor_script'   => 'dclt-hero-block-editor',
@@ -109,6 +117,14 @@ function dclt_register_blocks() {
     register_block_type('dclt/cta', [
         'editor_script'   => 'dclt-cta-block-editor',
         'render_callback' => 'dclt_render_cta_block',
+        'attributes'      => [
+            'blockId' => ['type'=>'string','default'=>''],
+        ],
+    ]);
+
+    register_block_type('dclt/feature-grid', [
+        'editor_script'   => 'dclt-feature-grid-block-editor',
+        'render_callback' => 'dclt_render_feature_grid_block',
         'attributes'      => [
             'blockId' => ['type'=>'string','default'=>''],
         ],
@@ -165,6 +181,21 @@ function dclt_render_cta_block($attributes, $content) {
     return '<div class="dclt-error">CTA block template not found</div>';
 }
 
+function dclt_render_feature_grid_block($attributes, $content) {
+    if (is_admin() && !wp_doing_ajax()) { return '<!-- dclt/feature-grid: admin bypass -->'; }
+
+    global $dclt_attributes;
+    $dclt_attributes = $attributes;
+
+    $template = get_template_directory() . '/blocks/feature-grid/feature-grid.php';
+    if (file_exists($template)) {
+        ob_start();
+        include $template;
+        return ob_get_clean();
+    }
+    return '<div class="dclt-error" style="padding: 2rem; background: #fef2f2; border: 2px solid #ef4444; border-radius: 8px; color: #dc2626;">Feature Grid block template not found at: ' . $template . '</div>';
+}
+
 /* ============================================================================
  * Meta boxes (include files and register)
  * ========================================================================== */
@@ -177,6 +208,9 @@ if (file_exists($stats_meta)) { require_once $stats_meta; }
 
 $cta_meta = get_template_directory() . '/blocks/cta/cta-meta-box.php';
 if (file_exists($cta_meta)) { require_once $cta_meta; }
+
+$feature_grid_meta = get_template_directory() . '/blocks/feature-grid/feature-grid-meta-box.php';
+if (file_exists($feature_grid_meta)) { require_once $feature_grid_meta; }
 
 // Add meta box registration function for stats (missing from your original file)
 function dclt_add_stats_meta_box() {
@@ -212,6 +246,13 @@ if (function_exists('dclt_save_cta_meta_box')) {
     add_action('save_post', 'dclt_save_cta_meta_box');
 }
 
+if (function_exists('dclt_add_feature_grid_meta_box')) {
+    add_action('add_meta_boxes', 'dclt_add_feature_grid_meta_box');
+}
+if (function_exists('dclt_save_feature_grid_meta_box')) {
+    add_action('save_post', 'dclt_save_feature_grid_meta_box');
+}
+
 // Enqueue media library for meta boxes
 add_action('admin_enqueue_scripts', function ($hook) {
     if ($hook === 'post.php' || $hook === 'post-new.php') {
@@ -233,6 +274,7 @@ function dclt_enqueue_block_assets_conditionally() {
     if (has_block('dclt/hero', $post)) { $used[] = 'hero'; }
     if (has_block('dclt/cta',  $post)) { $used[] = 'cta';  }
     if (has_block('dclt/stats', $post)) { $used[] = 'stats';}
+    if (has_block('dclt/feature-grid', $post)) { $used[] = 'feature-grid'; }
     
     if (!empty($used)) {
         $shared_css = get_template_directory() . '/blocks/shared/blocks.css';
