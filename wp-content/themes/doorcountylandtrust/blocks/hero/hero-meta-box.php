@@ -34,6 +34,12 @@ function dclt_hero_meta_box_callback($post) {
     $subheadline      = dclt_get_field($post->ID, 'hero_subheadline', '');
     $primary_cta_text = dclt_get_field($post->ID, 'hero_primary_cta_text', '', 'Protect Your Land');
     $primary_cta_url  = dclt_get_field($post->ID, 'hero_primary_cta_url', '');
+    $secondary_cta_text = dclt_get_field($post->ID, 'hero_secondary_cta_text', '', '');
+    $secondary_cta_url  = dclt_get_field($post->ID, 'hero_secondary_cta_url', '', '');
+    $button_1_text    = dclt_get_field($post->ID, 'hero_button_1_text', '', $primary_cta_text);
+    $button_1_url     = dclt_get_field($post->ID, 'hero_button_1_url', '', $primary_cta_url);
+    $button_2_text    = dclt_get_field($post->ID, 'hero_button_2_text', '', $secondary_cta_text);
+    $button_2_url     = dclt_get_field($post->ID, 'hero_button_2_url', '', $secondary_cta_url);
     $background_type  = dclt_get_field($post->ID, 'hero_background_type', '', 'image');
     $background_image = dclt_get_field($post->ID, 'hero_background_image', '');
     $background_color = dclt_get_field($post->ID, 'hero_background_color', '', '#006847');
@@ -70,17 +76,31 @@ function dclt_hero_meta_box_callback($post) {
         </div>
 
         <div class="dclt-field">
-            <label for="hero_primary_cta_text">Primary CTA Text</label>
-            <input type="text" id="hero_primary_cta_text" name="hero_primary_cta_text"
-                   value="<?php echo esc_attr($primary_cta_text); ?>" placeholder="Protect Your Land">
-            <div class="description">Action-oriented button text</div>
+            <label for="hero_button_1_text">Button 1 Text</label>
+            <input type="text" id="hero_button_1_text" name="hero_button_1_text"
+                   value="<?php echo esc_attr($button_1_text); ?>" placeholder="Protect Your Land">
+            <div class="description">Primary call-to-action label</div>
         </div>
 
         <div class="dclt-field">
-            <label for="hero_primary_cta_url">Primary CTA URL</label>
-            <input type="url" id="hero_primary_cta_url" name="hero_primary_cta_url"
-                   value="<?php echo esc_attr($primary_cta_url); ?>">
-            <div class="description">Required for button to appear</div>
+            <label for="hero_button_1_url">Button 1 URL</label>
+            <input type="url" id="hero_button_1_url" name="hero_button_1_url"
+                   value="<?php echo esc_attr($button_1_url); ?>" placeholder="https://">
+            <div class="description">Required for Button 1 to display</div>
+        </div>
+
+        <div class="dclt-field">
+            <label for="hero_button_2_text">Button 2 Text</label>
+            <input type="text" id="hero_button_2_text" name="hero_button_2_text"
+                   value="<?php echo esc_attr($button_2_text); ?>" placeholder="Discover Our Work">
+            <div class="description">Optional supporting action</div>
+        </div>
+
+        <div class="dclt-field">
+            <label for="hero_button_2_url">Button 2 URL</label>
+            <input type="url" id="hero_button_2_url" name="hero_button_2_url"
+                   value="<?php echo esc_attr($button_2_url); ?>" placeholder="https://">
+            <div class="description">Leave blank to hide Button 2</div>
         </div>
 
         <div class="dclt-field">
@@ -175,14 +195,26 @@ function dclt_save_hero_meta_box($post_id) {
         'hero_subheadline',
         'hero_primary_cta_text',
         'hero_primary_cta_url',
+        'hero_button_1_text',
+        'hero_button_1_url',
+        'hero_button_2_text',
+        'hero_button_2_url',
         'hero_background_type',
         'hero_background_image',
         'hero_background_color',
         'hero_overlay_opacity',
     ];
+    $url_fields = [
+        'hero_primary_cta_url',
+        'hero_button_1_url',
+        'hero_button_2_url',
+    ];
+
     foreach ($fields as $field) {
         if (isset($_POST[$field])) {
-            dclt_update_field($post_id, $field, sanitize_text_field($_POST[$field]));
+            $raw   = wp_unslash($_POST[$field]);
+            $value = in_array($field, $url_fields, true) ? esc_url_raw($raw) : sanitize_text_field($raw);
+            dclt_update_field($post_id, $field, $value);
         }
     }
 }

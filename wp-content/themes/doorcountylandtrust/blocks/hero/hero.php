@@ -20,11 +20,15 @@ $overlay_opacity  = dclt_get_field($post_id, 'hero_overlay_opacity', '', '40'); 
 $headline     = dclt_get_field($post_id, 'hero_headline', '', 'Protect the Land You Love');
 $subheadline  = dclt_get_field($post_id, 'hero_subheadline', '', '');
 
-$primary_text = dclt_get_field($post_id, 'hero_primary_cta_text', '', '');
-$primary_url  = dclt_get_field($post_id, 'hero_primary_cta_url', '', '');
+$legacy_button_1_text = dclt_get_field($post_id, 'hero_primary_cta_text', '', 'Protect Your Land');
+$legacy_button_1_url  = dclt_get_field($post_id, 'hero_primary_cta_url', '', '');
+$legacy_button_2_text = dclt_get_field($post_id, 'hero_secondary_cta_text', '', '');
+$legacy_button_2_url  = dclt_get_field($post_id, 'hero_secondary_cta_url', '', '');
 
-$secondary_text = dclt_get_field($post_id, 'hero_secondary_cta_text', '', '');
-$secondary_url  = dclt_get_field($post_id, 'hero_secondary_cta_url', '', '');
+$button_1_text = dclt_get_field($post_id, 'hero_button_1_text', '', $legacy_button_1_text);
+$button_1_url  = dclt_get_field($post_id, 'hero_button_1_url', '', $legacy_button_1_url);
+$button_2_text = dclt_get_field($post_id, 'hero_button_2_text', '', $legacy_button_2_text);
+$button_2_url  = dclt_get_field($post_id, 'hero_button_2_url', '', $legacy_button_2_url);
 
 $container_width = dclt_get_field($post_id, 'hero_container_width', '', 'wide');
 $curved_bottom   = dclt_get_field($post_id, 'hero_curved_bottom', '', '1');
@@ -98,17 +102,18 @@ if ($bg_type === 'video' && $bg_video_id) {
         </h1>
       <?php endif; ?>
 
-      <?php if ($primary_text || $secondary_text): ?>
+      <?php $has_buttons = ($button_1_text && $button_1_url) || ($button_2_text && $button_2_url); ?>
+      <?php if ($has_buttons): ?>
         <div class="hero-cta">
-          <?php if ($primary_text && $primary_url): ?>
-            <a href="<?php echo esc_url($primary_url); ?>" class="hero-button hero-button--primary">
-               <?php echo esc_html($primary_text); ?>
+          <?php if ($button_1_text && $button_1_url): ?>
+            <a href="<?php echo esc_url($button_1_url); ?>" class="hero-button">
+               <?php echo esc_html($button_1_text); ?>
             </a>
           <?php endif; ?>
 
-          <?php if ($secondary_text && $secondary_url): ?>
-            <a href="<?php echo esc_url($secondary_url); ?>" class="hero-button hero-button--secondary">
-               <?php echo esc_html($secondary_text); ?>
+          <?php if ($button_2_text && $button_2_url): ?>
+            <a href="<?php echo esc_url($button_2_url); ?>" class="hero-button">
+               <?php echo esc_html($button_2_text); ?>
             </a>
           <?php endif; ?>
         </div>
