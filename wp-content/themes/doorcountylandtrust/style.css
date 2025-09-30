@@ -516,3 +516,28 @@ video {
 
 
 
+/* WordPress menu overrides for DCLT header */
+.site-header .menu a {
+  @apply text-neutral-700 hover:text-primary-700 font-medium transition-colors py-2 border-b-2 border-transparent hover:border-primary-700;
+}
+
+.site-header .current-menu-item a,
+.site-header .current_page_item a {
+  @apply text-primary-700 border-primary-700 font-semibold;
+}
+
+/* Mobile menu styling */
+#mobile-menu .menu a {
+  @apply block text-neutral-700 hover:text-primary-700 font-medium py-3 border-b border-neutral-100 transition-colors;
+}
+
+/* Custom logo sizing */
+.custom-logo {
+  @apply h-12 w-auto;
+  height: 48px;
+}
+
+/* Urgent banner link styling */
+.urgent-banner a {
+  @apply text-yellow-900 underline hover:text-yellow-800 font-bold;
+}

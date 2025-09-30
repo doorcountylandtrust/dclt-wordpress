@@ -178,3 +178,44 @@ add_action('wp_enqueue_scripts', function () {
 });
 
 require_once get_template_directory() . '/inc/design-tokens.php';
+
+/**
+ * Enable SVG uploads
+ */
+function dclt_enable_svg_upload($mimes) {
+    $mimes['svg'] = 'image/svg+xml';
+    return $mimes;
+}
+add_filter('upload_mimes', 'dclt_enable_svg_upload');
+
+/**
+ * Fix SVG display in media library
+ */
+function dclt_fix_svg_display($response, $attachment, $meta) {
+    if ($response['type'] === 'image' && $response['subtype'] === 'svg+xml') {
+        $response['image'] = array(
+            'src' => $response['url'],
+            'width' => 150,
+            'height' => 150,
+        );
+    }
+    return $response;
+}
+add_filter('wp_prepare_attachment_for_js', 'dclt_fix_svg_display', 10, 3);
+
+/**
+ * Basic SVG sanitization
+ */
+function dclt_sanitize_svg($file) {
+    if ($file['type'] === 'image/svg+xml') {
+        $svg_content = file_get_contents($file['tmp_name']);
+        
+        // Remove potentially dangerous elements
+        $svg_content = preg_replace('/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/mi', '', $svg_content);
+        $svg_content = preg_replace('/on\w+="[^"]*"/i', '', $svg_content);
+        
+        file_put_contents($file['tmp_name'], $svg_content);
+    }
+    return $file;
+}
+add_filter('wp_handle_upload_prefilter', 'dclt_sanitize_svg');

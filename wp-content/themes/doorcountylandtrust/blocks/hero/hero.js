@@ -23,31 +23,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Parallax effect for background images (optional)
+    // Apply load-based animation class for hero images
     const heroImagesBlocks = document.querySelectorAll('.dclt-hero-block[data-background-type="image"]');
     
-    function handleScroll() {
-        heroImagesBlocks.forEach(block => {
-            const rect = block.getBoundingClientRect();
-            const speed = 0.5;
-            const yPos = -(rect.top * speed);
-            const img = block.querySelector('img');
-            
-            if (img && rect.bottom >= 0 && rect.top <= window.innerHeight) {
-                img.style.transform = `translateY(${yPos}px)`;
-            }
-        });
-    }
-    
-    // Throttled scroll handler
-    let ticking = false;
-    function requestTick() {
-        if (!ticking) {
-            requestAnimationFrame(handleScroll);
-            ticking = true;
-            setTimeout(() => ticking = false, 16);
+    heroImagesBlocks.forEach(block => {
+        const img = block.querySelector('img');
+        if (img) {
+            img.classList.add('animate');
         }
-    }
-    
-    window.addEventListener('scroll', requestTick);
+    });
 });
