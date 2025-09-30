@@ -17,17 +17,14 @@ $bg_color        = dclt_get_field($post_id, 'hero_background_color', '', '#065f4
 $overlay_strength = dclt_get_field($post_id, 'hero_overlay_strength', '', 'auto'); // optional (auto/light/medium/dark/none)
 $overlay_opacity  = dclt_get_field($post_id, 'hero_overlay_opacity', '', '40');    // legacy slider support
 
-$align        = dclt_get_field($post_id, 'hero_content_alignment', '', 'left');
 $headline     = dclt_get_field($post_id, 'hero_headline', '', 'Protect the Land You Love');
 $subheadline  = dclt_get_field($post_id, 'hero_subheadline', '', '');
 
-$primary_text  = dclt_get_field($post_id, 'hero_primary_cta_text', '', '');
-$primary_url   = dclt_get_field($post_id, 'hero_primary_cta_url', '', '');
-$primary_style = dclt_get_field($post_id, 'hero_primary_cta_style', '', 'primary');
+$primary_text = dclt_get_field($post_id, 'hero_primary_cta_text', '', '');
+$primary_url  = dclt_get_field($post_id, 'hero_primary_cta_url', '', '');
 
-$secondary_text  = dclt_get_field($post_id, 'hero_secondary_cta_text', '', '');
-$secondary_url   = dclt_get_field($post_id, 'hero_secondary_cta_url', '', '');
-$secondary_style = dclt_get_field($post_id, 'hero_secondary_cta_style', '', 'secondary');
+$secondary_text = dclt_get_field($post_id, 'hero_secondary_cta_text', '', '');
+$secondary_url  = dclt_get_field($post_id, 'hero_secondary_cta_url', '', '');
 
 $container_width = dclt_get_field($post_id, 'hero_container_width', '', 'wide');
 $curved_bottom   = dclt_get_field($post_id, 'hero_curved_bottom', '', '1');
@@ -42,22 +39,6 @@ $fp_style = sprintf('--fx:%d%%;--fy:%d%%;', $focal_x, $focal_y);
 
 // Derived classes
 $container_class = dclt_get_container_class($container_width);
-
-// --- Alignment mapping (safe) ---
-switch ($align) {
-  case 'center':
-    $text_align = 'text-center mx-auto';
-    $justify    = 'justify-center';
-    break;
-  case 'right':
-    $text_align = 'text-right ml-auto';
-    $justify    = 'justify-end';
-    break;
-  default:
-    $text_align = 'text-left';
-    $justify    = 'justify-start';
-    break;
-}
 
 // Overlay alpha (if you adopt strength field)
 $alpha_map = ['light'=>0.25,'medium'=>0.45,'dark'=>0.65,'none'=>0.0];
@@ -102,33 +83,31 @@ if ($bg_type === 'video' && $bg_video_id) {
   <?php endif; ?>
 
   <!-- Content -->
-  <div class="<?php echo esc_attr($container_class); ?> relative z-10 py-20 md:py-32">
-    <div class="hero-content <?php echo esc_attr($text_align); ?> max-w-3xl">
-
-      <?php if ($headline): ?>
-        <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-white">
-          <?php echo wp_kses_post($headline); ?>
-        </h1>
-      <?php endif; ?>
+  <div class="<?php echo esc_attr($container_class); ?> relative z-10 hero-inner">
+    <div class="hero-content">
 
       <?php if ($subheadline): ?>
-        <p class="text-xl md:text-2xl mb-8 text-white/90 leading-relaxed">
+        <p class="hero-intro">
           <?php echo wp_kses_post($subheadline); ?>
         </p>
       <?php endif; ?>
 
+      <?php if ($headline): ?>
+        <h1 class="hero-headline">
+          <?php echo wp_kses_post($headline); ?>
+        </h1>
+      <?php endif; ?>
+
       <?php if ($primary_text || $secondary_text): ?>
-        <div class="flex flex-col sm:flex-row gap-4 <?php echo esc_attr($justify); ?>">
+        <div class="hero-cta">
           <?php if ($primary_text && $primary_url): ?>
-            <a href="<?php echo esc_url($primary_url); ?>"
-               class="<?php echo esc_attr(dclt_get_button_class($primary_style)); ?>">
+            <a href="<?php echo esc_url($primary_url); ?>" class="hero-button hero-button--primary">
                <?php echo esc_html($primary_text); ?>
             </a>
           <?php endif; ?>
 
           <?php if ($secondary_text && $secondary_url): ?>
-            <a href="<?php echo esc_url($secondary_url); ?>"
-               class="<?php echo esc_attr(dclt_get_button_class($secondary_style)); ?>">
+            <a href="<?php echo esc_url($secondary_url); ?>" class="hero-button hero-button--secondary">
                <?php echo esc_html($secondary_text); ?>
             </a>
           <?php endif; ?>

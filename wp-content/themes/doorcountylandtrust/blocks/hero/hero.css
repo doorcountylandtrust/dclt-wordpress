@@ -1,26 +1,30 @@
 /*
- * Door County Land Trust — Enhanced Hero Block
+ * Door County Land Trust — Hero Block Layout
  * File: blocks/hero/hero.css
- * Mission: Create emotional connection with conservation impact
  */
 
 .dclt-hero-block {
   position: relative;
   overflow: hidden;
   display: flex;
-  align-items: center;
-  min-height: 70vh;
+  align-items: stretch;
+  min-height: clamp(520px, 78vh, 760px);
   width: 100vw;
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
+  padding-top: clamp(3.5rem, 18vh, 8rem);
+  padding-bottom: clamp(2.5rem, 10vh, 5rem);
   contain: layout style paint;
 }
 
 @media (max-width: 768px) {
-  .dclt-hero-block { min-height: 60vh; }
+  .dclt-hero-block {
+    min-height: 70vh;
+    padding-top: clamp(2.5rem, 14vh, 4.5rem);
+    padding-bottom: clamp(2rem, 10vh, 3.5rem);
+  }
 }
 
-/* Enhanced media treatment */
 .dclt-hero-media,
 .dclt-hero-overlay {
   position: absolute;
@@ -32,247 +36,128 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center center;
-  /* Enhanced image treatment for nature photography */
-  filter: brightness(0.85) contrast(1.15) saturate(1.1);
+  object-position: var(--fx, 50%) var(--fy, 50%);
 }
 
-@keyframes heroImageZoom {
-  from {
-    transform: scale(1);
-  }
-  to {
-    transform: scale(1.05);
-  }
-}
-
-.dclt-hero-media img.animate {
-  animation: heroImageZoom 12s ease-out forwards;
-}
-
-/* Sophisticated overlay for readability */
 .dclt-hero-overlay {
   background: linear-gradient(
-    135deg,
-    rgba(0, 45, 31, 0.4) 0%,
-    rgba(6, 95, 70, 0.35) 30%,
-    rgba(0, 104, 71, 0.45) 70%,
-    rgba(0, 77, 53, 0.6) 100%
+    180deg,
+    rgba(6, 36, 29, 0.65) 0%,
+    rgba(6, 36, 29, 0.25) 55%,
+    rgba(6, 36, 29, 0.65) 100%
   );
-  /* Add subtle texture */
-  background-image: 
-    radial-gradient(circle at 20% 80%, rgba(255,255,255,0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 20%, rgba(255,255,255,0.03) 0%, transparent 50%);
 }
 
-/* Content styling with better hierarchy */
-.dclt-hero-block .hero-content {
+.dclt-hero-block .hero-inner {
   position: relative;
-  z-index: 20;
-  max-width: 48rem;
-  padding: 2.5rem 1.5rem;
-}
-
-/* Typography with conservation mission focus */
-.dclt-hero-block h1 {
-  font-size: clamp(2.5rem, 5.5vw, 4.5rem);
-  font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.025em;
-  color: #ffffff;
-  margin: 0 0 1.25rem 0;
-  
-  /* Enhanced text shadow for perfect readability */
-  text-shadow: 
-    0 2px 4px rgba(0,0,0,0.5),
-    0 4px 8px rgba(0,0,0,0.3),
-    0 8px 16px rgba(0,0,0,0.2);
-    
-  /* Subtle text treatment */
-  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-}
-
-.dclt-hero-block p {
-  font-size: clamp(1.125rem, 2.5vw, 1.4rem);
-  line-height: 1.6;
-  color: rgba(255,255,255,0.95);
-  margin: 0 0 2rem 0;
-  font-weight: 400;
-  
-  text-shadow: 
-    0 1px 2px rgba(0,0,0,0.4),
-    0 2px 4px rgba(0,0,0,0.3);
-}
-
-/* Enhanced CTA buttons */
-.dclt-hero-block .cta-buttons {
+  z-index: 10;
   display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  margin-top: 2rem;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
 }
 
-.dclt-hero-block .cta-primary,
-.dclt-hero-block .cta-secondary {
+.dclt-hero-block .hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1rem, 1.8vw, 1.5rem);
+  max-width: min(42rem, 60%);
+  color: #ffffff;
+  text-align: left;
+}
+
+@media (max-width: 1024px) {
+  .dclt-hero-block .hero-content {
+    max-width: min(36rem, 80%);
+  }
+}
+
+@media (max-width: 640px) {
+  .dclt-hero-block .hero-content {
+    max-width: 100%;
+    gap: 1rem;
+  }
+}
+
+.hero-intro {
+  font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+.hero-headline {
+  font-size: clamp(2.5rem, 6vw, 4.8rem);
+  line-height: 1.05;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.35);
+}
+
+.hero-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .hero-cta {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+.hero-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem 2.5rem;
-  border-radius: 0.75rem;
-  font-weight: 700;
-  font-size: 1.125rem;
+  padding: 0.85rem 2.5rem;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  color: #ffffff;
+  background: transparent;
   text-decoration: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2px solid transparent;
-  min-width: 200px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
+  font-weight: 600;
+  font-size: 1rem;
+  line-height: 1;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  cursor: pointer;
 }
 
-/* Primary CTA - Conservation Action */
-.dclt-hero-block .cta-primary {
-  background: linear-gradient(135deg, #059669 0%, #065f46 100%);
-  color: white;
-  border-color: rgba(255,255,255,0.2);
-  box-shadow: 
-    0 4px 12px rgba(6, 95, 70, 0.4),
-    0 2px 4px rgba(0,0,0,0.2),
-    inset 0 1px 0 rgba(255,255,255,0.2);
-}
-
-.dclt-hero-block .cta-primary:hover {
-  background: linear-gradient(135deg, #047857 0%, #064e3b 100%);
+.hero-button:hover,
+.hero-button:focus-visible {
+  border-color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 
-    0 6px 20px rgba(6, 95, 70, 0.5),
-    0 4px 8px rgba(0,0,0,0.3);
-  border-color: rgba(255,255,255,0.3);
 }
 
-/* Secondary CTA - Learn More */
-.dclt-hero-block .cta-secondary {
-  background: rgba(255,255,255,0.15);
-  color: white;
-  border: 2px solid rgba(255,255,255,0.8);
-  backdrop-filter: blur(10px);
+.hero-button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.7);
+  outline-offset: 2px;
 }
 
-.dclt-hero-block .cta-secondary:hover {
-  background: rgba(255,255,255,0.25);
-  border-color: rgba(255,255,255,1);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+.hero-button--secondary {
+  border-color: rgba(255, 255, 255, 0.55);
 }
 
-/* Button ripple effect */
-.dclt-hero-block .cta-primary::before,
-.dclt-hero-block .cta-secondary::before {
-  content: '';
-  position: absolute;
-  inset: 50%;
-  width: 0;
-  height: 0;
-  background: rgba(255,255,255,0.2);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-  pointer-events: none;
+.hero-button--secondary:hover,
+.hero-button--secondary:focus-visible {
+  border-color: #ffffff;
 }
 
-.dclt-hero-block .cta-primary:active::before,
-.dclt-hero-block .cta-secondary:active::before {
-  width: 300px;
-  height: 300px;
+@media (max-width: 640px) {
+  .hero-button {
+    width: 100%;
+  }
 }
 
-/* Enhanced curved divider */
 .dclt-hero-block .curve-divider {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 60px;
-  overflow: hidden;
-}
-
-.dclt-hero-block .curve-divider svg {
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 -2px 4px rgba(0,0,0,0.1));
-}
-
-.dclt-hero-block .curve-fill {
-  fill: #ffffff;
-}
-
-/* Mobile responsiveness */
-@media (max-width: 640px) {
-  .dclt-hero-block .cta-buttons {
-    flex-direction: column;
-    align-items: center;
-  }
-  
-  .dclt-hero-block .cta-primary,
-  .dclt-hero-block .cta-secondary {
-    width: 100%;
-    max-width: 300px;
-  }
-  
-  .dclt-hero-block .hero-content {
-    padding: 2rem 1rem;
-    text-align: center;
-  }
-}
-
-/* Content animation */
-.dclt-hero-block .hero-content > * {
-  animation: heroContentSlide 0.8s ease-out forwards;
-  opacity: 0;
-  transform: translateY(30px);
-}
-
-.dclt-hero-block .hero-content h1 { animation-delay: 0.2s; }
-.dclt-hero-block .hero-content p { animation-delay: 0.4s; }
-.dclt-hero-block .hero-content .cta-buttons { animation-delay: 0.6s; }
-
-@keyframes heroContentSlide {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Accessibility and reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .dclt-hero-block .hero-content > *,
-  .dclt-hero-block .cta-primary,
-  .dclt-hero-block .cta-secondary,
-  .dclt-hero-media img {
-    animation: none !important;
-    transition: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-}
-
-/* Focus states */
-.dclt-hero-block .cta-primary:focus,
-.dclt-hero-block .cta-secondary:focus {
-  outline: 3px solid rgba(255,255,255,0.8);
-  outline-offset: 3px;
-}
-
-/* High contrast support */
-@media (prefers-contrast: high) {
-  .dclt-hero-overlay {
-    background: rgba(0,0,0,0.7);
-  }
-  
-  .dclt-hero-block .cta-primary,
-  .dclt-hero-block .cta-secondary {
-    border: 3px solid currentColor;
-  }
 }
