@@ -30,6 +30,10 @@ $button_1_url  = dclt_get_field($post_id, 'hero_button_1_url', '', $legacy_butto
 $button_2_text = dclt_get_field($post_id, 'hero_button_2_text', '', $legacy_button_2_text);
 $button_2_url  = dclt_get_field($post_id, 'hero_button_2_url', '', $legacy_button_2_url);
 
+$photo_credit  = trim(dclt_get_field($post_id, 'hero_photo_credit', '', ''));
+$photo_note    = trim(dclt_get_field($post_id, 'hero_photo_note', '', ''));
+$photo_website = trim(dclt_get_field($post_id, 'hero_photo_website', '', ''));
+
 $container_width = dclt_get_field($post_id, 'hero_container_width', '', 'wide');
 $curved_bottom   = dclt_get_field($post_id, 'hero_curved_bottom', '', '1');
 
@@ -121,6 +125,58 @@ if ($bg_type === 'video' && $bg_video_id) {
 
     </div>
   </div>
+
+  <?php
+    $has_photo_note    = ($photo_note !== '');
+    $show_credit_block = ($photo_credit !== '') || $has_photo_note;
+    $credit_block_id   = sanitize_title($block_id ?: ('hero-' . $post_id));
+    $note_panel_id     = $credit_block_id ? $credit_block_id . '-photo-note' : 'hero-photo-note-' . $post_id;
+    $credit_display    = '';
+
+    if ($photo_credit !== '') {
+      $credit_display = (stripos($photo_credit, 'photo') === 0)
+        ? $photo_credit
+        : sprintf(esc_html__('Photo by %s', 'doorcountylandtrust'), $photo_credit);
+    }
+  ?>
+
+  <?php if ($show_credit_block): ?>
+    <div class="photo-credit-block"<?php if ($has_photo_note): ?> data-note-id="<?php echo esc_attr($note_panel_id); ?>"<?php endif; ?>>
+      <?php if ($credit_display !== ''): ?>
+        <span class="hero-credit"><?php echo esc_html($credit_display); ?></span>
+      <?php endif; ?>
+
+      <?php if ($has_photo_note): ?>
+        <button type="button"
+                class="hero-photo-note-toggle"
+                aria-expanded="false"
+                aria-controls="<?php echo esc_attr($note_panel_id); ?>"
+                aria-haspopup="dialog">
+          <?php echo esc_html__('About this photo', 'doorcountylandtrust'); ?>
+        </button>
+
+        <div id="<?php echo esc_attr($note_panel_id); ?>"
+             class="hero-photo-note"
+             hidden
+             role="region"
+             aria-label="<?php echo esc_attr__('About this photo', 'doorcountylandtrust'); ?>">
+          <button type="button"
+                  class="hero-photo-note-close"
+                  aria-label="<?php echo esc_attr__('Close photo details', 'doorcountylandtrust'); ?>">
+            &times;
+          </button>
+          <p><?php echo nl2br(esc_html($photo_note)); ?></p>
+          <?php if ($photo_website !== ''): ?>
+            <p class="hero-photo-note-link">
+              <a href="<?php echo esc_url($photo_website); ?>" target="_blank" rel="noopener noreferrer">
+                <?php echo esc_html__('Visit photographer website', 'doorcountylandtrust'); ?>
+              </a>
+            </p>
+          <?php endif; ?>
+        </div>
+      <?php endif; ?>
+    </div>
+  <?php endif; ?>
 
   <!-- Curved Bottom Divider -->
   <?php if ($curved_bottom === '1'): ?>

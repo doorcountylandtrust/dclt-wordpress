@@ -142,9 +142,127 @@
   outline-offset: 2px;
 }
 
+.photo-credit-block {
+  position: absolute;
+  inset: auto 1rem 1rem auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+  gap: 0.5rem;
+  max-width: min(20rem, calc(100% - 2rem));
+  z-index: 15;
+}
+
+@media (min-width: 768px) {
+  .photo-credit-block {
+    inset: auto 1.5rem 1.5rem auto;
+    max-width: min(22rem, calc(100% - 3rem));
+  }
+}
+
+.hero-credit {
+  font-size: 0.85rem;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.9);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.hero-photo-note-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.hero-photo-note-toggle:hover,
+.hero-photo-note-toggle:focus-visible {
+  color: #ffffff;
+  outline: none;
+}
+
+.hero-photo-note-toggle:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.75);
+  border-radius: 0.35rem;
+}
+
+.hero-photo-note {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.75rem);
+  background: rgba(12, 30, 24, 0.75);
+  backdrop-filter: blur(6px);
+  padding: 1.4rem 1.8rem 1.2rem 1.2rem;
+  border-radius: 0.85rem;
+  color: #ffffff;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  width: min(22rem, 80vw);
+  z-index: 20;
+}
+
+.hero-photo-note p {
+  margin: 0 0 0.75rem 0;
+}
+
+.hero-photo-note p:last-child {
+  margin-bottom: 0;
+}
+
+.hero-photo-note a {
+  color: #ffffff;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.hero-photo-note a:hover,
+.hero-photo-note a:focus-visible {
+  color: #f0fdf4;
+}
+
+.hero-photo-note-close {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.6rem;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.2s ease;
+}
+
+.hero-photo-note-close:hover,
+.hero-photo-note-close:focus-visible {
+  color: #ffffff;
+  outline: none;
+}
+
+.hero-photo-note-close:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.75);
+  border-radius: 999px;
+}
+
 @media (max-width: 640px) {
   .hero-button {
     width: 100%;
+  }
+
+  .hero-photo-note {
+    position: relative;
+    bottom: auto;
+    right: auto;
+    width: 100%;
+    margin-top: 0.75rem;
   }
 }
 

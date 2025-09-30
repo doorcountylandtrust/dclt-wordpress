@@ -40,6 +40,9 @@ function dclt_hero_meta_box_callback($post) {
     $button_1_url     = dclt_get_field($post->ID, 'hero_button_1_url', '', $primary_cta_url);
     $button_2_text    = dclt_get_field($post->ID, 'hero_button_2_text', '', $secondary_cta_text);
     $button_2_url     = dclt_get_field($post->ID, 'hero_button_2_url', '', $secondary_cta_url);
+    $photo_credit     = dclt_get_field($post->ID, 'hero_photo_credit', '', '');
+    $photo_note       = dclt_get_field($post->ID, 'hero_photo_note', '', '');
+    $photo_website    = dclt_get_field($post->ID, 'hero_photo_website', '', '');
     $background_type  = dclt_get_field($post->ID, 'hero_background_type', '', 'image');
     $background_image = dclt_get_field($post->ID, 'hero_background_image', '');
     $background_color = dclt_get_field($post->ID, 'hero_background_color', '', '#006847');
@@ -101,6 +104,29 @@ function dclt_hero_meta_box_callback($post) {
             <input type="url" id="hero_button_2_url" name="hero_button_2_url"
                    value="<?php echo esc_attr($button_2_url); ?>" placeholder="https://">
             <div class="description">Leave blank to hide Button 2</div>
+        </div>
+
+        <hr style="margin: 24px 0; border: 0; border-top: 1px solid #e0e0e0;">
+
+        <div class="dclt-field">
+            <label for="hero_photo_credit">Photo Credit</label>
+            <input type="text" id="hero_photo_credit" name="hero_photo_credit"
+                   value="<?php echo esc_attr($photo_credit); ?>" placeholder="Photo: Jane Smith">
+            <div class="description">Short credit line displayed in the hero (optional)</div>
+        </div>
+
+        <div class="dclt-field">
+            <label for="hero_photo_note">Photographer Note</label>
+            <textarea id="hero_photo_note" name="hero_photo_note" rows="3"
+                      placeholder="Reflection or context about the photo."><?php echo esc_textarea($photo_note); ?></textarea>
+            <div class="description">Appears in an expandable panel below the credit</div>
+        </div>
+
+        <div class="dclt-field">
+            <label for="hero_photo_website">Photographer Website</label>
+            <input type="url" id="hero_photo_website" name="hero_photo_website"
+                   value="<?php echo esc_attr($photo_website); ?>" placeholder="https://">
+            <div class="description">Optional link shown inside the note panel</div>
         </div>
 
         <div class="dclt-field">
@@ -199,6 +225,9 @@ function dclt_save_hero_meta_box($post_id) {
         'hero_button_1_url',
         'hero_button_2_text',
         'hero_button_2_url',
+        'hero_photo_credit',
+        'hero_photo_note',
+        'hero_photo_website',
         'hero_background_type',
         'hero_background_image',
         'hero_background_color',
@@ -208,12 +237,22 @@ function dclt_save_hero_meta_box($post_id) {
         'hero_primary_cta_url',
         'hero_button_1_url',
         'hero_button_2_url',
+        'hero_photo_website',
+    ];
+    $textarea_fields = [
+        'hero_photo_note',
     ];
 
     foreach ($fields as $field) {
         if (isset($_POST[$field])) {
             $raw   = wp_unslash($_POST[$field]);
-            $value = in_array($field, $url_fields, true) ? esc_url_raw($raw) : sanitize_text_field($raw);
+            if (in_array($field, $url_fields, true)) {
+                $value = esc_url_raw($raw);
+            } elseif (in_array($field, $textarea_fields, true)) {
+                $value = sanitize_textarea_field($raw);
+            } else {
+                $value = sanitize_text_field($raw);
+            }
             dclt_update_field($post_id, $field, $value);
         }
     }
