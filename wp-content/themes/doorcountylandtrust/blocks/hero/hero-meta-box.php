@@ -106,49 +106,9 @@ function dclt_hero_meta_box_callback($post) {
             <div class="description">Leave blank to hide Button 2</div>
         </div>
 
-        <hr style="margin: 24px 0; border: 0; border-top: 1px solid #e0e0e0;">
 
-        <div class="dclt-field">
-            <label for="hero_photo_credit">Photo Credit</label>
-            <input type="text" id="hero_photo_credit" name="hero_photo_credit"
-                   value="<?php echo esc_attr($photo_credit); ?>" placeholder="Photo: Jane Smith">
-            <div class="description">Short credit line displayed in the hero (optional)</div>
-        </div>
 
-        <div class="dclt-field">
-            <label for="hero_photo_note">Photographer Note</label>
-            <textarea id="hero_photo_note" name="hero_photo_note" rows="3"
-                      placeholder="Reflection or context about the photo."><?php echo esc_textarea($photo_note); ?></textarea>
-            <div class="description">Appears in an expandable panel below the credit</div>
-        </div>
-
-        <div class="dclt-field">
-            <label for="hero_photo_website">Photographer Website</label>
-            <input type="url" id="hero_photo_website" name="hero_photo_website"
-                   value="<?php echo esc_attr($photo_website); ?>" placeholder="https://">
-            <div class="description">Optional link shown inside the note panel</div>
-        </div>
-
-        <div class="dclt-field">
-            <label for="hero_background_type">Background Type</label>
-            <select id="hero_background_type" name="hero_background_type">
-                <option value="image" <?php selected($background_type, 'image'); ?>>Image</option>
-                <option value="color" <?php selected($background_type, 'color'); ?>>Solid Color</option>
-            </select>
-        </div>
-
-        <!-- Image Background -->
-        <div class="dclt-field" id="background_image_field" style="<?php echo $background_type !== 'image' ? 'display:none;' : ''; ?>">
-            <label for="hero_background_image">Background Image</label>
-            <input type="hidden" id="hero_background_image" name="hero_background_image"
-                   value="<?php echo esc_attr($background_image); ?>">
-            <button type="button" class="dclt-media-button button">Choose Image</button>
-            <button type="button" class="dclt-remove-media button" style="<?php echo !$background_image ? 'display:none;' : ''; ?>">Remove</button>
-            <div class="dclt-image-preview" id="image-preview" style="<?php echo !$background_image ? 'display:none;' : ''; ?>">
-                <?php if ($background_image) echo wp_get_attachment_image($background_image, 'medium'); ?>
-            </div>
-            <div class="description">Recommended: 1920×1080px or larger</div>
-        </div>
+       
 
         <!-- Color Background -->
         <div class="dclt-field" id="background_color_field" style="<?php echo $background_type !== 'color' ? 'display:none;' : ''; ?>">

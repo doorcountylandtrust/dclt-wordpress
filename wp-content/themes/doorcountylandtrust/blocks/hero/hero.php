@@ -9,11 +9,14 @@ $post_id  = get_the_ID();
 $block_id = isset($dclt_attributes['blockId']) ? sanitize_title($dclt_attributes['blockId']) : '';
 
 // Fields
-$bg_type         = dclt_get_field($post_id, 'hero_background_type', '', 'image'); // image|video|color
-$bg_image_id     = dclt_get_field($post_id, 'hero_background_image', '');
-$bg_video_id     = dclt_get_field($post_id, 'hero_background_video', '');
-$bg_color        = dclt_get_field($post_id, 'hero_background_color', '', '#065f46');
 
+// Vimeo Video Embed Support
+function dclt_get_vimeo_embed_url($url) {
+    if (preg_match('/vimeo\.com\/(\d+)/', $url, $matches)) {
+        return 'https://player.vimeo.com/video/' . $matches[1] . '?background=1&autoplay=1&loop=1&byline=0&title=0&muted=1';
+    }
+    return '';
+}
 $overlay_strength = dclt_get_field($post_id, 'hero_overlay_strength', '', 'auto'); // optional (auto/light/medium/dark/none)
 $overlay_opacity  = dclt_get_field($post_id, 'hero_overlay_opacity', '', '40');    // legacy slider support
 
@@ -29,10 +32,6 @@ $button_1_text = dclt_get_field($post_id, 'hero_button_1_text', '', $legacy_butt
 $button_1_url  = dclt_get_field($post_id, 'hero_button_1_url', '', $legacy_button_1_url);
 $button_2_text = dclt_get_field($post_id, 'hero_button_2_text', '', $legacy_button_2_text);
 $button_2_url  = dclt_get_field($post_id, 'hero_button_2_url', '', $legacy_button_2_url);
-
-$photo_credit  = trim(dclt_get_field($post_id, 'hero_photo_credit', '', ''));
-$photo_note    = trim(dclt_get_field($post_id, 'hero_photo_note', '', ''));
-$photo_website = trim(dclt_get_field($post_id, 'hero_photo_website', '', ''));
 
 $container_width = dclt_get_field($post_id, 'hero_container_width', '', 'wide');
 $curved_bottom   = dclt_get_field($post_id, 'hero_curved_bottom', '', '1');
@@ -54,39 +53,159 @@ $overlay_alpha = ($overlay_strength === 'auto')
     ? (max(0.0, min(1.0, (int)$overlay_opacity / 100)))   // use slider if present
     : ($alpha_map[$overlay_strength] ?? 0.45);
 
-// Media URLs
-$bg_image_url = '';
-if ($bg_type === 'image' && $bg_image_id) {
-  $img = wp_get_attachment_image_src($bg_image_id, 'full');
-  if ($img) $bg_image_url = $img[0];
+$slideshow_enabled_flag = dclt_get_field($post_id, 'hero_slideshow_enabled', '', '1');
+
+$media_sources = [
+  get_post_meta($post_id, 'dclt_hero_media', true),
+  dclt_get_field($post_id, 'hero_media_gallery', '', []),
+  dclt_get_field($post_id, 'hero_media', '', []),
+];
+
+$photo_credit = '';
+$photo_note = '';
+$photo_website = '';
+
+$slides = [];
+foreach ($media_sources as $source) {
+  if (!is_array($source) || empty($source)) { continue; }
+  foreach ($source as $entry) {
+    if (!is_array($entry)) { continue; }
+
+    $type = isset($entry['type']) && $entry['type'] === 'video' ? 'video' : 'image';
+    $image_id = isset($entry['image_id']) ? (int) $entry['image_id'] : 0;
+    $image_url = '';
+    if ($image_id) {
+      $image_src = wp_get_attachment_image_src($image_id, 'full');
+      if ($image_src) {
+        $image_url = $image_src[0];
+      }
+    }
+
+    if ($type === 'image' && !$image_url && !empty($entry['url'])) {
+      $image_url = esc_url_raw($entry['url']);
+    }
+
+    $video_url_raw = isset($entry['video_url']) ? trim((string) $entry['video_url']) : '';
+    if ($type === 'video' && $video_url_raw === '') {
+      $type = 'image';
+    }
+
+    if ($type === 'image' && $image_url === '') {
+      continue;
+    }
+
+    $credit   = isset($entry['credit']) ? trim((string) $entry['credit']) : '';
+    $note     = isset($entry['note']) ? trim((string) $entry['note']) : '';
+    $website  = isset($entry['website']) ? trim((string) $entry['website']) : '';
+    if ($website === '' && isset($entry['link'])) {
+      $website = trim((string) $entry['link']);
+    }
+
+    $slides[] = [
+      'type'         => $type,
+      'image_id'     => $image_id,
+      'image_url'    => $image_url,
+      'video_url'    => $type === 'video' ? esc_url_raw($video_url_raw) : '',
+      'fallback_url' => $image_url,
+      'color'        => '',
+      'credit'       => $credit !== '' ? $credit : $photo_credit,
+      'note'         => $note !== '' ? $note : $photo_note,
+      'website'      => $website !== '' ? esc_url_raw($website) : $photo_website,
+    ];
+  }
+  if (!empty($slides)) { break; }
 }
-$bg_video_url = '';
-if ($bg_type === 'video' && $bg_video_id) {
-  $bg_video_url = wp_get_attachment_url($bg_video_id);
+
+if (empty($slides)) {
+  $slides[] = [
+    'type'         => 'color',
+    'image_id'     => 0,
+    'image_url'    => '',
+    'video_url'    => '',
+    'fallback_url' => '',
+    'color'        => '#065f46',
+    'credit'       => $photo_credit,
+    'note'         => $photo_note,
+    'website'      => $photo_website,
+  ];
 }
+
+$slide_count = count($slides);
+$autoplay_enabled = ($slideshow_enabled_flag !== '0') && $slide_count > 1;
+$active_slide = $slide_count ? $slides[0] : null;
+
+$active_credit  = $active_slide ? $active_slide['credit'] : $photo_credit;
+$active_note    = $active_slide ? $active_slide['note'] : $photo_note;
+$active_website = $active_slide ? $active_slide['website'] : $photo_website;
+
+$any_slide_has_meta = false;
+foreach ($slides as $slide_meta) {
+  if (($slide_meta['credit'] ?? '') !== '' || ($slide_meta['note'] ?? '') !== '' || ($slide_meta['website'] ?? '') !== '') {
+    $any_slide_has_meta = true;
+    break;
+  }
+}
+
+$overlay_applicable = false;
+foreach ($slides as $slide_meta) {
+  if (($slide_meta['type'] ?? '') !== 'color') {
+    $overlay_applicable = true;
+    break;
+  }
+}
+
+$initial_has_note = $active_note !== '';
+$initial_has_website = $active_website !== '';
+
+$section_bg_type = $active_slide ? ($active_slide['type'] ?? 'image') : 'color';
 ?>
 
 <section class="dclt-hero-block relative overflow-hidden <?php echo esc_attr($height_class); ?>"
-         data-background-type="<?php echo esc_attr($bg_type); ?>">
+         data-background-type="<?php echo esc_attr($section_bg_type); ?>"
+         data-slideshow-enabled="<?php echo $autoplay_enabled ? '1' : '0'; ?>"
+         data-slideshow-count="<?php echo esc_attr($slide_count); ?>"
+         data-slideshow-interval="7000">
 
   <!-- Background media -->
-  <div class="dclt-hero-media absolute inset-0">
-    <?php if ($bg_type === 'image' && $bg_image_url): ?>
-      <img src="<?php echo esc_url($bg_image_url); ?>" alt="" aria-hidden="true"
-           class="w-full h-full object-cover"
-           style="<?php echo esc_attr($fp_style); ?>" />
-    <?php elseif ($bg_type === 'video' && $bg_video_url): ?>
-      <video class="w-full h-full object-cover" autoplay muted loop playsinline
-             style="<?php echo esc_attr($fp_style); ?>">
-        <source src="<?php echo esc_url($bg_video_url); ?>" type="video/mp4" />
-      </video>
-    <?php elseif ($bg_type === 'color'): ?>
-      <div style="background: <?php echo esc_attr($bg_color); ?>; width:100%; height:100%;"></div>
-    <?php endif; ?>
+  <div class="dclt-hero-media absolute inset-0" data-hero-slides>
+    <?php foreach ($slides as $index => $slide_meta):
+      $slide_type      = $slide_meta['type'] ?? 'image';
+      $slide_image     = $slide_meta['image_url'] ?? '';
+      $slide_video     = $slide_meta['video_url'] ?? '';
+      $slide_color     = $slide_meta['color'] ?? '';
+      $slide_credit    = $slide_meta['credit'] ?? '';
+      $slide_note      = $slide_meta['note'] ?? '';
+      $slide_website   = $slide_meta['website'] ?? '';
+      $slide_fallback  = $slide_meta['fallback_url'] ?? '';
+      $note_attr       = $slide_note !== '' ? esc_attr(wp_json_encode($slide_note)) : '';
+      $website_attr    = $slide_website !== '' ? esc_attr($slide_website) : '';
+      $fallback_attr   = $slide_fallback !== '' ? esc_attr($slide_fallback) : '';
+    ?>
+      <div class="hero-slide <?php echo $index === 0 ? 'is-active' : ''; ?>"
+           data-slide-index="<?php echo esc_attr($index); ?>"
+           data-slide-type="<?php echo esc_attr($slide_type); ?>"
+           <?php if ($slide_credit !== ''): ?>data-slide-credit="<?php echo esc_attr($slide_credit); ?>"<?php endif; ?>
+           <?php if ($note_attr !== ''): ?>data-slide-note="<?php echo $note_attr; ?>"<?php endif; ?>
+           <?php if ($website_attr !== ''): ?>data-slide-website="<?php echo $website_attr; ?>"<?php endif; ?>
+           <?php if ($fallback_attr !== ''): ?>data-slide-fallback="<?php echo $fallback_attr; ?>"<?php endif; ?>>
+        <?php if ($slide_type === 'video' && $slide_video): ?>
+          <video class="hero-slide-video" autoplay muted loop playsinline preload="metadata"<?php if ($slide_fallback): ?> poster="<?php echo esc_url($slide_fallback); ?>"<?php endif; ?>>
+            <source src="<?php echo esc_url($slide_video); ?>" type="video/mp4" />
+          </video>
+        <?php elseif ($slide_type === 'color'): ?>
+          <div class="hero-slide-color" style="background: <?php echo esc_attr($slide_color ?: $bg_color); ?>;"></div>
+        <?php else: ?>
+          <img src="<?php echo esc_url($slide_image); ?>" alt="" aria-hidden="true"
+               class="hero-media-fade"
+               loading="<?php echo $index === 0 ? 'eager' : 'lazy'; ?>"
+               style="<?php echo esc_attr($fp_style); ?>" />
+        <?php endif; ?>
+      </div>
+    <?php endforeach; ?>
   </div>
 
   <!-- Overlay layer -->
-  <?php if ($bg_type !== 'color' && $overlay_alpha > 0): ?>
+  <?php if ($overlay_applicable && $overlay_alpha > 0): ?>
     <div class="dclt-hero-overlay absolute inset-0" style="opacity: <?php echo esc_attr($overlay_alpha); ?>"></div>
   <?php endif; ?>
 
@@ -126,57 +245,9 @@ if ($bg_type === 'video' && $bg_video_id) {
     </div>
   </div>
 
-  <?php
-    $has_photo_note    = ($photo_note !== '');
-    $show_credit_block = ($photo_credit !== '') || $has_photo_note;
-    $credit_block_id   = sanitize_title($block_id ?: ('hero-' . $post_id));
-    $note_panel_id     = $credit_block_id ? $credit_block_id . '-photo-note' : 'hero-photo-note-' . $post_id;
-    $credit_display    = '';
+   
 
-    if ($photo_credit !== '') {
-      $credit_display = (stripos($photo_credit, 'photo') === 0)
-        ? $photo_credit
-        : sprintf(esc_html__('Photo by %s', 'doorcountylandtrust'), $photo_credit);
-    }
-  ?>
-
-  <?php if ($show_credit_block): ?>
-    <div class="photo-credit-block"<?php if ($has_photo_note): ?> data-note-id="<?php echo esc_attr($note_panel_id); ?>"<?php endif; ?>>
-      <?php if ($credit_display !== ''): ?>
-        <span class="hero-credit"><?php echo esc_html($credit_display); ?></span>
-      <?php endif; ?>
-
-      <?php if ($has_photo_note): ?>
-        <button type="button"
-                class="hero-photo-note-toggle"
-                aria-expanded="false"
-                aria-controls="<?php echo esc_attr($note_panel_id); ?>"
-                aria-haspopup="dialog">
-          <?php echo esc_html__('About this photo', 'doorcountylandtrust'); ?>
-        </button>
-
-        <div id="<?php echo esc_attr($note_panel_id); ?>"
-             class="hero-photo-note"
-             hidden
-             role="region"
-             aria-label="<?php echo esc_attr__('About this photo', 'doorcountylandtrust'); ?>">
-          <button type="button"
-                  class="hero-photo-note-close"
-                  aria-label="<?php echo esc_attr__('Close photo details', 'doorcountylandtrust'); ?>">
-            &times;
-          </button>
-          <p><?php echo nl2br(esc_html($photo_note)); ?></p>
-          <?php if ($photo_website !== ''): ?>
-            <p class="hero-photo-note-link">
-              <a href="<?php echo esc_url($photo_website); ?>" target="_blank" rel="noopener noreferrer">
-                <?php echo esc_html__('Visit photographer website', 'doorcountylandtrust'); ?>
-              </a>
-            </p>
-          <?php endif; ?>
-        </div>
-      <?php endif; ?>
-    </div>
-  <?php endif; ?>
+   
 
   <!-- Curved Bottom Divider -->
   <?php if ($curved_bottom === '1'): ?>

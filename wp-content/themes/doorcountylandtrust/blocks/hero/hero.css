@@ -31,12 +31,86 @@
   inset: 0;
 }
 
+.dclt-hero-media {
+  overflow: hidden;
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  pointer-events: none;
+  display: flex;
+}
+
+.hero-slide.is-active {
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 2;
+}
+
+.hero-slide video,
+.hero-slide img,
+.hero-slide-color {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.hero-slide-color {
+  display: block;
+}
+
 .dclt-hero-media img,
 .dclt-hero-media video {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: var(--fx, 50%) var(--fy, 50%);
+}
+
+.hero-media-fallback {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.dclt-hero-overlay {
+  z-index: 3;
+  pointer-events: none;
+}
+
+@keyframes heroZoomFade {
+  0% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.hero-media-fade {
+  opacity: 0;
+  transform: scale(1);
+}
+
+.hero-media-fade.animate {
+  animation: heroZoomFade 12s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-media-fade {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
 }
 
 .dclt-hero-overlay {
@@ -271,4 +345,32 @@
   bottom: 0;
   left: 0;
   width: 100%;
+}
+
+.hero-slide.was-active {
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
+  transition: opacity 0.8s ease;
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hero-slide.is-active {
+  opacity: 1;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+.hero-slide.was-active {
+  opacity: 0;
+  z-index: 1;
+  pointer-events: none;
 }
