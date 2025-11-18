@@ -1,0 +1,180 @@
+/**
+ * DCLT Global CSS Variables and Base Styles
+ * Converted from React/Tailwind globals.css
+ */
+
+:root {
+  /* DCLT Brand Tokens */
+  --font-size: 16px;
+
+  /* Nature-Inspired Color Palette */
+  --forest-green: #1F4421;
+  --forest-green-light: #2D5016;
+  --cedar-green: #3A5A3C;
+  --sand: #E8DCC4;
+  --sand-dark: #D4C4A8;
+  --water-blue: #4A7C95;
+  --water-blue-light: #6B9DB5;
+  --sky-gray: #A8B5BF;
+  --sky-gray-light: #D4DDE3;
+  --stone: #5C5F58;
+  --earth: #8B7355;
+
+  /* Semantic Tokens */
+  --background: #FAFAF8;
+  --foreground: #1A1A18;
+  --card: #ffffff;
+  --card-foreground: #1A1A18;
+  --popover: #ffffff;
+  --popover-foreground: #1A1A18;
+  --primary: #1F4421;
+  --primary-foreground: #FAFAF8;
+  --secondary: #E8DCC4;
+  --secondary-foreground: #1A1A18;
+  --muted: #F5F3ED;
+  --muted-foreground: #5C5F58;
+  --accent: #4A7C95;
+  --accent-foreground: #ffffff;
+  --destructive: #A84032;
+  --destructive-foreground: #ffffff;
+  --border: rgba(26, 26, 24, 0.12);
+  --input: transparent;
+  --input-background: #F5F3ED;
+  --switch-background: #A8B5BF;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: #4A7C95;
+  --chart-1: #1F4421;
+  --chart-2: #4A7C95;
+  --chart-3: #8B7355;
+  --chart-4: #2D5016;
+  --chart-5: #6B9DB5;
+  --radius: 0.375rem;
+
+  /* Spacing System (8px base grid) */
+  --spacing-xs: 0.5rem;    /* 8px */
+  --spacing-sm: 1rem;      /* 16px */
+  --spacing-md: 1.5rem;    /* 24px */
+  --spacing-lg: 2rem;      /* 32px */
+  --spacing-xl: 3rem;      /* 48px */
+  --spacing-2xl: 4rem;     /* 64px */
+  --spacing-3xl: 6rem;     /* 96px */
+  --spacing-4xl: 8rem;     /* 128px */
+
+  /* Typography Scale */
+  --text-xs: 0.75rem;      /* 12px */
+  --text-sm: 0.875rem;     /* 14px */
+  --text-base: 1rem;       /* 16px */
+  --text-lg: 1.125rem;     /* 18px */
+  --text-xl: 1.25rem;      /* 20px */
+  --text-2xl: 1.5rem;      /* 24px */
+  --text-3xl: 1.875rem;    /* 30px */
+  --text-4xl: 2.25rem;     /* 36px */
+  --text-5xl: 3rem;        /* 48px */
+  --text-6xl: 3.75rem;     /* 60px */
+  --text-7xl: 4.5rem;      /* 72px */
+}
+
+html {
+  font-size: var(--font-size);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Base Typography */
+h1 {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  margin: 0 0 1rem 0;
+}
+
+h2 {
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  margin: 0 0 0.875rem 0;
+}
+
+h3 {
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  margin: 0 0 0.75rem 0;
+}
+
+h4 {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  margin: 0 0 0.5rem 0;
+}
+
+p {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.5;
+  margin: 0 0 1rem 0;
+}
+
+/* Reset box-sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Remove default margins */
+* {
+  margin: 0;
+}
+
+/* Images and media */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Form elements */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+/* Links */
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* WordPress specific */
+.alignwide {
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.alignfull {
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}

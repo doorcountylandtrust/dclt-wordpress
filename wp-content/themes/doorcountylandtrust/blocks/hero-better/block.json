@@ -1,0 +1,72 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "dclt/hero",
+  "title": "DCLT Hero",
+  "category": "dclt-blocks",
+  "icon": "cover-image",
+  "description": "Full-width hero section with background media, headline, and call-to-action buttons",
+  "keywords": ["hero", "banner", "header", "cta"],
+  "version": "1.0.0",
+  "textdomain": "dclt-theme",
+  "supports": {
+    "align": ["full"],
+    "anchor": true,
+    "customClassName": true,
+    "spacing": {
+      "margin": false,
+      "padding": false
+    }
+  },
+  "attributes": {
+    "backgroundType": {
+      "type": "string",
+      "default": "image",
+      "enum": ["image", "video", "gradient"]
+    },
+    "backgroundImage": {
+      "type": "object",
+      "default": null
+    },
+    "backgroundVideo": {
+      "type": "object",
+      "default": null
+    },
+    "headline": {
+      "type": "string",
+      "default": "Protecting Door County's Natural Beauty"
+    },
+    "subheadline": {
+      "type": "string",
+      "default": ""
+    },
+    "overlayOpacity": {
+      "type": "number",
+      "default": 0.4
+    },
+    "primaryCTALabel": {
+      "type": "string",
+      "default": ""
+    },
+    "primaryCTAUrl": {
+      "type": "string",
+      "default": ""
+    },
+    "secondaryCTALabel": {
+      "type": "string",
+      "default": ""
+    },
+    "secondaryCTAUrl": {
+      "type": "string",
+      "default": ""
+    },
+    "showScrollIndicator": {
+      "type": "boolean",
+      "default": true
+    },
+    "minHeight": {
+      "type": "string",
+      "default": "600px"
+    }
+  }
+}
