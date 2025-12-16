@@ -15,10 +15,11 @@ if (!is_array($media_items)) $media_items = [];
 
 ?>
 
-<section class="dclt-hero-block relative overflow-hidden h-standard" data-slideshow-enabled="1" data-slideshow-count="<?php echo count($media_items); ?>" data-slideshow-interval="7000">
-  <!-- Background media -->
-  <div class="dclt-hero-media absolute inset-0" data-hero-slides>
-    <?php foreach ($media_items as $index => $media): 
+<section class="dclt-hero-block relative overflow-hidden flex items-center" data-slideshow-enabled="1" data-slideshow-count="<?php echo count($media_items); ?>" data-slideshow-interval="7000">
+  <!-- Background Media -->
+    <!-- DEBUG: HERO V2 IS RENDERING -->
+  <div class="dclt-hero-media absolute inset-0 z-0" data-hero-slides>
+    <?php foreach ($media_items as $index => $media):
       $media_type = $media['type'] ?? 'image';
       $image_id   = $media['image'] ?? '';
       $video_url  = $media['video_url'] ?? '';
@@ -40,46 +41,48 @@ if (!is_array($media_items)) $media_items = [];
 
       if ($slide_type === 'image' && $image_id) {
         $image_url = wp_get_attachment_image_url($image_id, 'full');
-        echo "<img src=\"" . esc_url($image_url) . "\" class=\"hero-media-fade\" loading=\"lazy\" decoding=\"async\" aria-hidden=\"true\">";
+        echo "<img src=\"" . esc_url($image_url) . "\" class=\"w-full h-full object-cover hero-media-fade\" loading=\"lazy\" decoding=\"async\" aria-hidden=\"true\">";
       } elseif ($slide_type === 'video-vimeo' && $video_url) {
         $vimeo_url = esc_url($video_url) . '?autoplay=1&muted=1&loop=1&background=1';
-        echo "<iframe class=\"hero-vimeo-iframe\" src=\"$vimeo_url\" frameborder=\"0\" webkitallowfullscreen mozallowfullscreen allowfullscreen aria-hidden=\"true\"></iframe>";
+        echo "<iframe class=\"hero-vimeo-iframe w-full h-full\" src=\"$vimeo_url\" frameborder=\"0\" webkitallowfullscreen mozallowfullscreen allowfullscreen aria-hidden=\"true\"></iframe>";
       } elseif ($slide_type === 'video-native' && $video_url) {
-        echo "<video class=\"hero-media-fade\" autoplay muted loop playsinline aria-hidden=\"true\">";
+        echo "<video class=\"w-full h-full object-cover hero-media-fade\" autoplay muted loop playsinline aria-hidden=\"true\">";
         echo "<source src=\"" . esc_url($video_url) . "\" type=\"video/mp4\">";
         echo "</video>";
       }
 
       echo "</div>";
     endforeach; ?>
+
+    <!-- Gradient Overlay -->
+    <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60"></div>
   </div>
 
-  <!-- Overlay -->
-  <div class="dclt-hero-overlay absolute inset-0" style="opacity: 0.4;"></div>
-
-  <!-- Text Content -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 hero-inner">
-    <div class="hero-content">
+  <!-- Content -->
+  <div class="dclt-hero-content relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl">
       <?php if ($intro): ?>
-        <p class="hero-intro"><?php echo esc_html($intro); ?></p>
+        <p class="hero-intro text-white/70 mb-4"><?php echo esc_html($intro); ?></p>
       <?php endif; ?>
       <?php if ($headline): ?>
-        <h1 class="hero-headline"><?php echo esc_html($headline); ?></h1>
+        <h1 class="hero-headline text-white mb-6 leading-tight tracking-tight"><?php echo esc_html($headline); ?></h1>
       <?php endif; ?>
 
-      <div class="hero-cta">
-        <?php if ($button1_text && $button1_url): ?>
-          <a href="<?php echo esc_url($button1_url); ?>" class="hero-button"><?php echo esc_html($button1_text); ?></a>
-        <?php endif; ?>
-        <?php if ($button2_text && $button2_url): ?>
-          <a href="<?php echo esc_url($button2_url); ?>" class="hero-button"><?php echo esc_html($button2_text); ?></a>
-        <?php endif; ?>
-      </div>
+      <?php if ($button1_text || $button2_text): ?>
+        <div class="hero-cta flex flex-wrap gap-4">
+          <?php if ($button1_text && $button1_url): ?>
+            <a href="<?php echo esc_url($button1_url); ?>" class="hero-button hero-button--primary"><?php echo esc_html($button1_text); ?></a>
+          <?php endif; ?>
+          <?php if ($button2_text && $button2_url): ?>
+            <a href="<?php echo esc_url($button2_url); ?>" class="hero-button hero-button--secondary"><?php echo esc_html($button2_text); ?></a>
+          <?php endif; ?>
+        </div>
+      <?php endif; ?>
     </div>
   </div>
 
   <!-- Photo Credit -->
-  <div class="photo-credit-block" data-note-id="hero-photo-note">
+  <div class="photo-credit-block absolute bottom-4 right-4 md:bottom-6 md:right-6 z-15" data-note-id="hero-photo-note">
     <span class="hero-credit" data-photo-credit></span>
     <button type="button" class="hero-photo-note-toggle" aria-expanded="false" aria-controls="hero-photo-note" aria-haspopup="dialog">
       About this photo
@@ -92,7 +95,7 @@ if (!is_array($media_items)) $media_items = [];
   </div>
 
   <!-- Bottom Divider -->
-  <div class="absolute bottom-0 left-0 w-full">
+  <div class="absolute bottom-0 left-0 w-full z-5">
     <svg class="w-full h-8 md:h-16" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true">
       <path d="M0,0 C300,120 900,120 1200,0 L1200,120 L0,120 Z" fill="white"></path>
     </svg>

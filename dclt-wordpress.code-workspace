@@ -1,9 +1,11 @@
 {
 	"folders": [
 		{
+			"name": "dclt-wordpress",
 			"path": "."
 		},
 		{
+			"name": "dclt-website-figma-make-test",
 			"path": "../dclt-website-figma-make-test"
 		}
 	],

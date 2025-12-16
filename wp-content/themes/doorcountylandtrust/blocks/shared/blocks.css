@@ -3,6 +3,8 @@
  * File: blocks/shared/blocks.css
  */
 
+ @import "../hero/hero.css"
+
 /* Base block styling */
 .dclt-block {
     position: relative;
