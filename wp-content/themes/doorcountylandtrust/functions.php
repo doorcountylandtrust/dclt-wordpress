@@ -1,4 +1,5 @@
 <?php
+error_log('DCLT Theme: functions.php loaded');
 /**
  * Theme bootstrap for Door County Land Trust
  * Keep this file lean; block system lives in inc/blocks/blocks-init.php
@@ -231,3 +232,6 @@ function dclt_sanitize_svg($file) {
     return $file;
 }
 add_filter('wp_handle_upload_prefilter', 'dclt_sanitize_svg');
+
+// Programs CPT
+require_once get_template_directory() . '/inc/post-types/programs.php';
