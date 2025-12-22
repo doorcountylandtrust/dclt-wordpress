@@ -235,3 +235,116 @@ add_filter('wp_handle_upload_prefilter', 'dclt_sanitize_svg');
 
 // Programs CPT
 require_once get_template_directory() . '/inc/post-types/programs.php';
+
+
+function dclt_enqueue_scripts() {
+  $theme_uri = get_template_directory_uri();
+  $theme_version = wp_get_theme()->get('Version');
+  
+  // Shared utilities - loads site-wide (small file)
+  wp_enqueue_script(
+    'dclt-utils',
+    $theme_uri . '/assets/js/utils.js',
+    array(), // no dependencies
+    $theme_version,
+    true // in footer
+  );
+  
+  // Donation form - only on donate pages
+  if (is_page_template('page-donate.php') || is_page('donate') || is_page('give')) {
+    wp_enqueue_script(
+      'dclt-donate',
+      $theme_uri . '/assets/js/components/donate.js',
+      array('dclt-utils'), // depends on utils
+      $theme_version,
+      true
+    );
+  }
+  
+  // Modal - only when needed (add conditions as needed)
+  // Example: load on pages that have a modal trigger
+  if (is_page_template('page-donate.php') || has_shortcode(get_post()->post_content ?? '', 'donation_modal')) {
+    wp_enqueue_script(
+      'dclt-modal',
+      $theme_uri . '/assets/js/components/modal.js',
+      array('dclt-utils'),
+      $theme_version,
+      true
+    );
+  }
+  
+  // Event registration - only on event pages
+  if (is_singular('dclt_program') || is_post_type_archive('dclt_program')) {
+    wp_enqueue_script(
+      'dclt-events',
+      $theme_uri . '/assets/js/components/events.js',
+      array('dclt-utils'),
+      $theme_version,
+      true
+    );
+  }
+}
+add_action('wp_enqueue_scripts', 'dclt_enqueue_scripts');
+
+
+/**
+ * Add defer attribute to scripts for non-blocking load
+ */
+function dclt_defer_scripts($tag, $handle, $src) {
+  // Scripts to defer
+  $defer_scripts = array(
+    'dclt-utils',
+    'dclt-donate',
+    'dclt-modal',
+    'dclt-events'
+  );
+  
+  if (in_array($handle, $defer_scripts)) {
+    return str_replace(' src', ' defer src', $tag);
+  }
+  
+  return $tag;
+}
+add_filter('script_loader_tag', 'dclt_defer_scripts', 10, 3);
+
+
+/**
+ * Pass PHP data to JavaScript (optional - for dynamic config)
+ */
+function dclt_localize_scripts() {
+  // Only if donate script is enqueued
+  if (wp_script_is('dclt-donate', 'enqueued')) {
+    wp_localize_script('dclt-donate', 'dcltDonateConfig', array(
+      'ajaxUrl' => admin_url('admin-ajax.php'),
+      'nonce' => wp_create_nonce('dclt_donate_nonce'),
+      'successUrl' => home_url('/thank-you/'),
+      'cancelUrl' => get_permalink()
+    ));
+  }
+}
+add_action('wp_enqueue_scripts', 'dclt_localize_scripts', 20);
+
+
+/**
+ * Donation modal shortcode (optional)
+ * Usage: [donation_modal text="Donate Now"]
+ */
+function dclt_donation_modal_shortcode($atts) {
+  $atts = shortcode_atts(array(
+    'text' => 'Donate',
+    'class' => 'dclt-donate-btn',
+    'amount' => '',
+    'campaign' => ''
+  ), $atts);
+  
+  $data_attrs = '';
+  if ($atts['amount']) {
+    $data_attrs .= ' data-amount="' . esc_attr($atts['amount']) . '"';
+  }
+  if ($atts['campaign']) {
+    $data_attrs .= ' data-campaign="' . esc_attr($atts['campaign']) . '"';
+  }
+  
+  return '<button type="button" class="' . esc_attr($atts['class']) . '" onclick="DCLT.modal.open(\'dclt-donate-modal\')"' . $data_attrs . '>' . esc_html($atts['text']) . '</button>';
+}
+add_shortcode('donation_modal', 'dclt_donation_modal_shortcode');
