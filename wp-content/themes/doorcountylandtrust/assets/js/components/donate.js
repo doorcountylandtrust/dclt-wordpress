@@ -134,8 +134,12 @@ DCLT.donate = {
     };
     
     this.els.checkToggle.onchange = function() {
-      DCLT.utils.toggle(self.els.checkFields, this.checked);
-    };
+        DCLT.utils.toggle(self.els.checkFields, this.checked);
+        // Hide Give Now button when check is selected
+        self.els.submitBtn.style.display = this.checked ? 'none' : 'block';
+        // Also hide cover fees (not relevant for checks)
+        self.els.coverFees.parentElement.style.display = this.checked ? 'none' : 'flex';
+        };
     
     // Check pledge submit
     this.els.checkSubmit.onclick = function() {
