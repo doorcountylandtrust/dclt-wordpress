@@ -92,7 +92,11 @@ DCLT.donate = {
       checkSubmit: document.getElementById('dclt-check-submit'),
       checkSuccess: document.getElementById('dclt-check-success'),
       // Match banner
-      matchBanner: document.getElementById('match-banner')
+      matchBanner: document.getElementById('match-banner'),
+      // Matching gift fields
+      matchingToggle: document.getElementById('dclt-matching-toggle'),
+      matchingFields: document.getElementById('dclt-matching-fields'),
+      employerName: document.getElementById('dclt-employer-name') 
     };
   },
   
@@ -101,6 +105,10 @@ DCLT.donate = {
    */
   bindEvents: function() {
     var self = this;
+
+    this.els.matchingToggle.onchange = function() {
+      DCLT.utils.toggle(self.els.matchingFields, this.checked);
+    };
     
     // Amount buttons
     this.els.amountBtns.forEach(function(btn) {
@@ -381,6 +389,12 @@ submitCheckPledge: function() {
     if (this.els.businessToggle.checked) {
       payload.business_name = this.els.businessName.value;
       payload.is_business = true;
+    }
+
+    // Add matching gift info
+    if (this.els.matchingToggle.checked && this.els.employerName.value.trim()) {
+      payload.matching_gift_employer = this.els.employerName.value.trim();
+      payload.matching_gift_status = 'Potential';
     }
     
     // Submit to checkout

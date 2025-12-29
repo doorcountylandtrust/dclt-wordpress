@@ -103,6 +103,17 @@ get_header();
     </div>
   </div>
 
+  <!-- Matching Gift Toggle -->
+<div style="margin-bottom: 12px;">
+  <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8f8f6; border-radius: 8px; cursor: pointer;">
+    <input type="checkbox" id="dclt-matching-toggle" style="width: 18px; height: 18px;">
+    <span style="font-size: 14px; color: #555;">My employer matches gifts</span>
+  </label>
+  <div id="dclt-matching-fields" style="display: none; padding: 14px; background: #f8f8f6; border-radius: 0 0 8px 8px; margin-top: -8px;">
+    <input type="text" id="dclt-employer-name" placeholder="Employer name" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+  </div>
+</div>
+
   <!-- DAF / IRA Toggle -->
   <div style="margin-bottom: 12px;">
     <label style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8f8f6; border-radius: 8px; cursor: pointer;">
