@@ -302,47 +302,43 @@ DCLT.donate = {
   /**
    * Submit check pledge notification
    */
-  submitCheckPledge: function() {
-    var self = this;
-    var name = this.els.checkName.value.trim();
-    var email = this.els.checkEmail.value.trim();
-    var amount = this.els.checkAmount.value;
-    var designation = this.els.designation.value;
-    
-    if (!name || !email) {
-      window.alert('Please enter your name and email.');
-      return;
+submitCheckPledge: function() {
+  var self = this;
+  var name = this.els.checkName.value.trim();
+  var email = this.els.checkEmail.value.trim();
+  var amount = this.els.checkAmount.value;
+  var designation = this.els.designation.value;
+  
+  if (!name || !email) {
+    window.alert('Please enter your name and email.');
+    return;
+  }
+  
+  if (!DCLT.utils.isValidEmail(email)) {
+    window.alert('Please enter a valid email address.');
+    return;
+  }
+  
+  this.els.checkSubmit.textContent = 'Sending...';
+  this.els.checkSubmit.disabled = true;
+  
+  DCLT.utils.post(
+    this.config.checkoutBase + '/functions/v1/check-pledge',
+    {
+      name: name,
+      email: email,
+      amount: amount || null,
+      designation: designation
     }
-    
-    if (!DCLT.utils.isValidEmail(email)) {
-      window.alert('Please enter a valid email address.');
-      return;
-    }
-    
-    this.els.checkSubmit.textContent = 'Sending...';
-    this.els.checkSubmit.disabled = true;
-    
-    DCLT.utils.post(
-      this.config.checkoutBase + this.config.restPath,
-      {
-        name: name,
-        email: email,
-        amount: amount || null,
-        designation: designation
-      },
-      {
-        'apikey': this.config.publishableKey,
-        'Prefer': 'return=minimal'
-      }
-    ).then(function() {
-      DCLT.utils.show(self.els.checkSuccess);
-      DCLT.utils.hide(self.els.checkSubmit);
-    }).catch(function() {
-      window.alert('Something went wrong. Please try again.');
-      self.els.checkSubmit.textContent = 'Notify Us';
-      self.els.checkSubmit.disabled = false;
-    });
-  },
+  ).then(function() {
+    DCLT.utils.show(self.els.checkSuccess);
+    DCLT.utils.hide(self.els.checkSubmit);
+  }).catch(function() {
+    window.alert('Something went wrong. Please try again.');
+    self.els.checkSubmit.textContent = 'Notify Us';
+    self.els.checkSubmit.disabled = false;
+  });
+},
   
   /**
    * Submit donation to Stripe
