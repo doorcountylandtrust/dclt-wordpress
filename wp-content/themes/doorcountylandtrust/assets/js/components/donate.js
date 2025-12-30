@@ -96,7 +96,8 @@ DCLT.donate = {
       // Matching gift fields
       matchingToggle: document.getElementById('dclt-matching-toggle'),
       matchingFields: document.getElementById('dclt-matching-fields'),
-      employerName: document.getElementById('dclt-employer-name') 
+      employerName: document.getElementById('dclt-employer-name'),
+      birthdate: document.getElementById('dclt-birthdate'),
     };
   },
   
@@ -397,6 +398,11 @@ submitCheckPledge: function() {
       payload.matching_gift_status = 'Potential';
     }
     
+    // Add birthdate
+    if (this.els.birthdate.value) {
+      payload.birthdate = this.els.birthdate.value;
+    }
+
     // Submit to checkout
     DCLT.utils.post(
       this.config.checkoutBase + this.config.checkoutPath,

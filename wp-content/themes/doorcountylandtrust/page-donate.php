@@ -172,6 +172,14 @@ get_header();
     </label>
   </div>
 
+  <!-- Birthdate (optional) -->
+<div style="margin-bottom: 20px;">
+  <label style="display: block; font-size: 14px; color: #555; margin-bottom: 6px;">
+    Birthday <span style="color: #888; font-size: 12px;">(optional — we'd love to celebrate you!)</span>
+  </label>
+  <input type="date" id="dclt-birthdate" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+</div>
+
   <!-- Impact Message -->
   <div id="dclt-impact" style="display: none; text-align: center; padding: 12px; background: #f0f7ec; border-radius: 8px; margin-bottom: 12px; font-size: 14px; color: #2d5016;"></div>
 
