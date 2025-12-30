@@ -348,3 +348,11 @@ function dclt_donation_modal_shortcode($atts) {
   return '<button type="button" class="' . esc_attr($atts['class']) . '" onclick="DCLT.modal.open(\'dclt-donate-modal\')"' . $data_attrs . '>' . esc_html($atts['text']) . '</button>';
 }
 add_shortcode('donation_modal', 'dclt_donation_modal_shortcode');
+
+
+function dclt_donate_canonical() {
+  if (is_page_template('page-donate.php')) {
+    echo '<link rel="canonical" href="' . home_url('/donate/') . '" />' . "\n";
+  }
+}
+add_action('wp_head', 'dclt_donate_canonical');

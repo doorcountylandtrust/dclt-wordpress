@@ -9,21 +9,51 @@ var DCLT = DCLT || {};
 
 DCLT.donate = {
   
-  // Configuration
-  config: {
-    checkoutBase: 'https://lwetcjfjbcfepcgveglc.supabase.co',
-    checkoutPath: '/functions/v1/create-checkout-session',
-    restPath: '/rest/v1/pending_checks',
-    // anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZXRjamZqYmNmZXBjZ3ZlZ2xjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMzNDk1ODAsImV4cCI6MjA0ODkyNTU4MH0.LCz89ausV-HvJfYDgCFRB_FTzo5WwjiCQLCeWdaJ9rU',
-    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3ZXRjamZqYmNmZXBjZ3ZlZ2xjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI4NjU3MTMsImV4cCI6MjA2ODQ0MTcxM30.bNx0n5_shCrnukibEGAENPuvPHs4c5NeMBDqZowuKcQ',
-    publishableKey: 'sb_publishable_nJCGbWLvl20zgfoBMEKV3g_0L8enq2t',
-    campaignMap: {
-      'unrestricted': null,
-      'conservation_stewardship': '701Vo00000W8abmIAB',
-      'land_acquisition': null,
-      'education': null
+ config: {
+  checkoutBase: 'https://lwetcjfjbcfepcgveglc.supabase.co',
+  checkoutPath: '/functions/v1/create-checkout-session',
+  restPath: '/rest/v1/pending_checks',
+  anonKey: '...your key...',
+  publishableKey: 'sb_publishable_nJCGbWLvl20zgfoBMEKV3g_0L8enq2t',
+  
+  // Campaign URL slugs → Salesforce Campaign IDs
+  campaigns: {
+    'warner-2025': '701Vo00000ud2GEIAY',
+    'conservation-stewardship': '701Vo00000W8abmIAB'
+    // Add more as needed
+  },
+  
+  // Intent configurations
+  intents: {
+    'join': {
+      headline: 'Become a Member',
+      subhead: 'Join us in protecting Door County\'s wild places.',
+      campaignId: '701Hp000001SqoKIAS',  // New Member Dues
+      minAmount: 50
+    },
+    'renew': {
+      headline: 'Renew Your Membership',
+      subhead: 'Thank you for your continued support.',
+      campaignId: '701Hp000001SqoUIAS'  // Membership Renewal
+    },
+    'tribute': {
+      headline: 'Give a Meaningful Tribute',
+      subhead: 'Honor or remember someone special.',
+      campaignId: '701Hp000001SqoIIAS',  // In Memory/Honor
+      autoOpen: 'tribute'
+    },
+    'business': {
+      headline: 'Business Membership',
+      subhead: 'Partner with us to protect Door County.',
+      campaignId: '701Vo00000vtXk6IAE',  // Business Membership
+      autoOpen: 'business'
     }
   },
+  
+  // Default headline (no intent)
+  defaultHeadline: 'Protect Door County\'s Wild Places',
+  defaultSubhead: 'Your gift helps preserve the lands and waters we all love.'
+},
   
   // State
   state: {
@@ -98,6 +128,8 @@ DCLT.donate = {
       matchingFields: document.getElementById('dclt-matching-fields'),
       employerName: document.getElementById('dclt-employer-name'),
       birthdate: document.getElementById('dclt-birthdate'),
+      headline: document.getElementById('dclt-headline'),
+      subhead: document.getElementById('dclt-subhead'),
     };
   },
   
@@ -166,23 +198,60 @@ DCLT.donate = {
    * Check URL parameters for pre-fill
    */
   checkUrlParams: function() {
-    var amount = DCLT.utils.getUrlParam('amount');
-    var campaign = DCLT.utils.getUrlParam('campaign');
-    var match = DCLT.utils.getUrlParam('match');
+  var amount = DCLT.utils.getUrlParam('amount');
+  var campaign = DCLT.utils.getUrlParam('campaign');
+  var intent = DCLT.utils.getUrlParam('intent');
+  var match = DCLT.utils.getUrlParam('match');
+  
+  // Pre-select amount
+  if (amount) {
+    this.selectAmount(parseInt(amount));
+  }
+  
+  // Store campaign for Salesforce
+  if (campaign && this.config.campaigns[campaign]) {
+    this.state.campaignId = this.config.campaigns[campaign];
+    this.state.campaignSlug = campaign;
+  }
+  
+  // Apply intent (headline, auto-open sections)
+  if (intent && this.config.intents[intent]) {
+    var intentConfig = this.config.intents[intent];
     
-    if (amount) {
-      this.selectAmount(parseInt(amount));
+    // Update headline
+    if (this.els.headline && intentConfig.headline) {
+      this.els.headline.textContent = intentConfig.headline;
+    }
+    if (this.els.subhead && intentConfig.subhead) {
+      this.els.subhead.textContent = intentConfig.subhead;
     }
     
-    if (campaign) {
-      this.els.designation.value = campaign;
+    // Set minimum amount
+    if (intentConfig.minAmount) {
+      this.state.minAmount = intentConfig.minAmount;
     }
     
-    if (match === 'true' || match === '1') {
-      this.state.isMatch = true;
-      DCLT.utils.show(this.els.matchBanner);
+    // Auto-open sections
+    if (intentConfig.autoOpen === 'tribute' && this.els.tributeToggle) {
+      this.els.tributeToggle.checked = true;
+      DCLT.utils.show(this.els.tributeFields);
     }
-  },
+    if (intentConfig.autoOpen === 'business' && this.els.businessToggle) {
+      this.els.businessToggle.checked = true;
+      DCLT.utils.show(this.els.businessFields);
+    }
+  }
+  
+  // Show match banner
+  if (match === 'true' || match === '1') {
+    this.state.isMatch = true;
+    DCLT.utils.show(this.els.matchBanner);
+  }
+  // Default to New Member Dues if no campaign set
+  if (!this.state.campaignId) {
+    this.state.campaignId = '701Hp000001SqoKIAS';
+  }
+},
   
   /**
    * Select a preset amount
@@ -373,7 +442,7 @@ submitCheckPledge: function() {
       gift_type: amount >= 50 ? 'membership' : 'donation',
       source: 'website',
       is_anonymous: this.els.anonymous.checked,
-      campaign_id: this.config.campaignMap[this.els.designation.value] || null,
+      campaign_id: this.state.campaignId || null,
       success_url: window.location.origin + '/thank-you/',
       cancel_url: window.location.href
     };

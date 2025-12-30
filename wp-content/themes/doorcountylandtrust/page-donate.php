@@ -15,6 +15,8 @@ get_header();
   
   <!-- Header -->
   <div style="text-align: center; margin-bottom: 24px;">
+    <h1 id="dclt-headline">Protect Door County's Wild Places</h1>
+    <p id="dclt-subhead">Your gift helps preserve the lands and waters we all love.</p>
     <h2 style="color: #2d5016; font-size: 26px; margin: 0 0 8px 0; font-weight: 600;" id="donate-headline">
       Protect Door County's Wild Places
     </h2>
@@ -62,7 +64,7 @@ get_header();
   </div>
 
   <!-- Designation -->
-  <div style="margin-bottom: 20px;">
+  <!-- <div style="margin-bottom: 20px;">
     <div style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Direct my gift to</div>
     <select id="dclt-designation" style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 15px; background: white;">
       <option value="unrestricted">General Fund (where needed most)</option>
@@ -70,7 +72,7 @@ get_header();
       <option value="land_acquisition">Land Acquisition</option>
       <option value="education">Education Programs</option>
     </select>
-  </div>
+  </div> -->
 
   <!-- Tribute Toggle -->
   <div style="margin-bottom: 12px;">
